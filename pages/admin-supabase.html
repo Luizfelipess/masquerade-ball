@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Painel Administrativo — Baile de Máscaras</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    .admin-login{
+      max-width:400px;
+      margin:60px auto;
+    }
+    .admin-dashboard{
+      display:none;
+    }
+    .admin-dashboard.active{
+      display:block;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+      gap:16px;
+      margin:24px 0;
+    }
+    .stat-card{
+      background:rgba(232,197,116,0.05);
+      border:1px solid rgba(232,197,116,0.15);
+      border-radius:12px;
+      padding:20px;
+      text-align:center;
+    }
+    .stat-number{
+      font-size:2.5rem;
+      font-family:'Playfair Display',serif;
+      color:var(--gold);
+      font-weight:700;
+    }
+    .stat-label{
+      color:var(--muted);
+      font-size:0.9rem;
+      margin-top:8px;
+    }
+    .rsvp-item{
+      background:rgba(255,255,255,0.02);
+      border:1px solid rgba(232,197,116,0.1);
+      border-radius:10px;
+      padding:16px;
+      margin-bottom:12px;
+    }
+    .rsvp-item h4{
+      color:var(--gold);
+      margin:0 0 8px;
+      font-size:1.1rem;
+    }
+    .rsvp-item p{
+      color:var(--accent-soft);
+      margin:4px 0;
+      font-size:0.95rem;
+    }
+    .dependente-tag{
+      display:inline-block;
+      background:rgba(232,197,116,0.15);
+      color:var(--gold);
+      padding:4px 12px;
+      border-radius:20px;
+      font-size:0.85rem;
+      margin:4px 4px 0 0;
+    }
+    .look-ranking{
+      display:grid;
+      gap:16px;
+      margin-top:24px;
+    }
+    .look-item{
+      display:flex;
+      gap:16px;
+      background:rgba(255,255,255,0.02);
+      border:1px solid rgba(232,197,116,0.1);
+      border-radius:12px;
+      padding:16px;
+      align-items:center;
+    }
+    .look-item img{
+      width:80px;
+      height:80px;
+      object-fit:cover;
+      border-radius:8px;
+    }
+    .look-info{
+      flex:1;
+    }
+    .look-info h4{
+      color:var(--gold);
+      margin:0 0 4px;
+    }
+    .look-votes{
+      font-size:1.5rem;
+      color:var(--gold);
+      font-weight:700;
+      font-family:'Playfair Display',serif;
+    }
+    .admin-actions{
+      display:flex;
+      gap:12px;
+      margin:24px 0;
+      flex-wrap:wrap;
+    }
+    
+    /* === RESPONSIVO ADMIN === */
+    @media (max-width: 768px) {
+      .admin-login {
+        max-width: 100%;
+        margin: 20px auto;
+        padding: 16px;
+      }
+      
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      
+      .stat-card {
+        padding: 16px;
+      }
+      
+      .stat-number {
+        font-size: 2rem;
+      }
+      
+      .look-item {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .look-item img {
+        width: 100%;
+        height: auto;
+        max-width: 200px;
+        margin: 0 auto;
+      }
+      
+      .admin-actions {
+        flex-direction: column;
+      }
+      
+      .admin-actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .rsvp-item {
+        padding: 12px;
+      }
+      
+      .dependente-tag {
+        font-size: 0.8rem;
+        padding: 3px 10px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+      
+      .stat-number {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <h1>Baile de Máscaras</h1>
+      <p class="lead">Comemoração aos 30 Anos de <span class="celebrant-name">Thamires Feres</span></p>
+    </div>
+    <button class="hamburger" aria-label="Menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav class="main-nav" aria-label="Navegação principal">
+      <a href="/">Início</a>
+      <a href="/pages/convite.html">Convite</a>
+      <a href="/pages/codigo-vestes.html">Código de Vestes</a>
+      <a href="/pages/premio.html">Prêmio</a>
+      <a href="/pages/votacao.html">Votação</a>
+      <a href="/pages/confirmacao-nova.html">Confirmação</a>
+      <a href="/pages/tributos.html">Tributos</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <!-- Tela de Login -->
+    <section class="card admin-login" id="admin-login">
+      <div class="h-deco">
+        <h2>🔐 Acesso Administrativo</h2>
+        <img src="/images/flourish.svg" alt="ornamento" class="ornament" aria-hidden="true">
+      </div>
+      
+      <p class="lead-para">Área restrita para organizadores do evento.</p>
+      
+      <form id="login-form">
+        <label class="small">Senha de Administrador<br>
+          <input type="password" id="admin-password" class="input" placeholder="Digite a senha" required autofocus>
+        </label>
+        <button type="submit" class="btn primary" style="width:100%;margin-top:16px">Entrar</button>
+      </form>
+      
+      <p class="note" style="margin-top:16px">💡 Senha: <code>baile2026thamires</code></p>
+    </section>
+
+    <!-- Dashboard Admin -->
+    <div class="admin-dashboard" id="admin-dashboard">
+      <section class="card">
+        <div class="h-deco">
+          <h2>📊 Painel Administrativo</h2>
+          <img src="/images/flourish.svg" alt="ornamento" class="ornament" aria-hidden="true">
+        </div>
+
+        <button id="logout-btn" class="btn secondary" style="float:right">🚪 Sair</button>
+
+        <!-- Estatísticas -->
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-number" id="stat-confirmacoes">0</div>
+            <div class="stat-label">Confirmações</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="stat-pessoas">0</div>
+            <div class="stat-label">Total de Pessoas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="stat-looks">0</div>
+            <div class="stat-label">Looks Enviados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="stat-votos">0</div>
+            <div class="stat-label">Votos Registrados</div>
+          </div>
+        </div>
+
+        <!-- Ações -->
+        <div class="admin-actions">
+          <button class="btn primary" id="liberar-votacao-btn">🗳️ Liberar Votação</button>
+          <button class="btn secondary" id="bloquear-votacao-btn">🔒 Bloquear Votação</button>
+          <button class="btn secondary" id="exportar-csv-btn">📥 Exportar CSV</button>
+          <button class="btn secondary" id="refresh-btn">🔄 Atualizar Dados</button>
+        </div>
+
+        <div style="border-top:1px solid rgba(232,197,116,0.15);margin:32px 0"></div>
+
+        <!-- Tabs -->
+        <div style="display:flex;gap:16px;margin-bottom:24px;border-bottom:2px solid rgba(232,197,116,0.1)">
+          <button class="tab-btn active" data-tab="confirmacoes" style="background:none;border:none;color:var(--accent-soft);padding:12px 20px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.3s">
+            👥 Confirmações
+          </button>
+          <button class="tab-btn" data-tab="resultados" style="background:none;border:none;color:var(--accent-soft);padding:12px 20px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.3s">
+            🏆 Resultados Votação
+          </button>
+        </div>
+
+        <!-- Tab: Confirmações -->
+        <div class="tab-content active" id="tab-confirmacoes">
+          <h3 style="color:var(--gold);margin:0 0 16px">Lista de Confirmações</h3>
+          <div id="rsvps-list"></div>
+        </div>
+
+        <!-- Tab: Resultados -->
+        <div class="tab-content" id="tab-resultados" style="display:none">
+          <h3 style="color:var(--gold);margin:0 0 16px">Ranking de Looks</h3>
+          <p class="note">🔒 Estes resultados são visíveis apenas para você até o anúncio oficial.</p>
+          <div class="look-ranking" id="looks-ranking"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>Feito com esmero para uma noite inesquecível — Inspirado por Bridgerton.</p>
+  </footer>
+
+  <script src="/js/supabase-config.js"></script>
+  <script src="/js/supabase-functions.js"></script>
+  <script src="/js/main.js" defer></script>
+  <script src="/js/admin-supabase.js" defer></script>
+</body>
+</html>

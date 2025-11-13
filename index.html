@@ -1,233 +1,80 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <title>Segredos & Máscaras – 21/02/2026</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet"/>
-  <style>
-    html, body {
-      margin: 0; padding: 0;
-      height: 100%; width: 100vw;
-      font-family: 'Montserrat', sans-serif;
-      background-color: #0f0b14;
-      color: #c9b77b;
-      overflow-x: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      background: radial-gradient(ellipse at 60% 30%, #2d2027 0%, #120e13 65%, #050308 100%);
-    }
-    body {
-      flex-direction: column;
-    }
-    /* Chuva de pontinhos dourados */
-    .star-rain {
-      pointer-events: none;
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      z-index: 1;
-      overflow: hidden;
-    }
-    .star {
-      position: absolute;
-      border-radius: 50%;
-      pointer-events: none;
-      opacity: 0.82;
-      background: radial-gradient(circle, #fffbeccc 0%, #ffe396 70%, #ffd70000 100%);
-      will-change: transform, opacity;
-      filter: drop-shadow(0 0 2px #fff6c1aa);
-      animation: star-fall linear forwards;
-    }
-    @keyframes star-fall {
-      0%   { opacity: 0; transform: translateY(-15vh) scale(0.55);}
-      7%   { opacity: 0.9;}
-      85%  { opacity: 1;}
-      100% { opacity: 0.2; transform: translateY(110vh) scale(0.92);}
-    }
-    /* Container principal */
-    .card {
-      position: relative;
-      z-index: 2;
-      text-align: center;
-      padding: 2.6rem 1.6rem 3rem 1.6rem;
-      max-width: 430px;
-      width: 94vw;
-      background: rgba(26,23,34,0.93);
-      border: 2px solid #ebd295;
-      border-radius: 1.4rem;
-      backdrop-filter: saturate(182%) blur(10px);
-      box-shadow: 0 6px 44px #efd07036, 0 2px 11px #926 w9a29;
-      transition: box-shadow 0.3s;
-    }
-    .card:hover {
-      box-shadow: 0 8px 88px 7px #ffc70056, 0 4px 50px #fff3aa21;
-    }
-    .title {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.25rem;
-      color: #ffe1a0;
-      font-weight: 700;
-      margin-bottom: 0.6rem;
-      letter-spacing: 0.08rem;
-      text-shadow: 0 1.7px 16px #fff9c422, 0 2px 14px #d2b87925;
-    }
-    .subtitle {
-      font-weight: 700;
-      font-size: 1.08rem;
-      margin-bottom: 1.6rem;
-      color: #b4a468;
-      font-style: italic;
-      letter-spacing: 0.07em;
-    }
-    .baile-img {
-      width: 100%;
-      max-width: 400px;
-      border-radius: 1rem;
-      border: 3px solid #caa34d;
-      box-shadow: 0 0 25px 2px #dabf6364;
-      transition: transform 0.28s, box-shadow 0.28s;
-      user-select: none;
-      margin-bottom: 2rem;
-      background: #1a161c;
-    }
-    .baile-img:hover {
-      box-shadow: 0 0 50px #ffeec2e1, 0 4px 22px #ffe38e80;
-      transform: scale(1.046);
-    }
-    .phrase {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 1.04rem;
-      color: #f9e5aa;
-      font-weight: 600;
-      min-height: 2rem;
-      margin-bottom: 2.3rem;
-      transition: opacity 0.42s;
-      letter-spacing: 0.03em;
-      text-shadow: 0 1px 5px #fffcd226;
-    }
-    .date {
-      font-weight: 700;
-      font-size: 1.22rem;
-      color: #fff5be;
-      letter-spacing: 0.15rem;
-      border-top: 1px solid #c9b77b;
-      padding-top: 1rem;
-      margin-top: 0.7rem;
-    }
-    /* Mouse fairy trail effect */
-    .fairy {
-      position: fixed;
-      width: 12px; height: 12px;
-      pointer-events: none;
-      border-radius: 50%;
-      opacity: 0.85;
-      z-index: 5;
-      background: radial-gradient(circle,#ffe88a 0%,#fffdea 45%,#fff2 85%,#ffe06666 100%);
-      filter: blur(1px) drop-shadow(0 0 7px #ffeb3ba1);
-      animation: fairy-fade 0.95s linear forwards;
-      will-change: opacity, transform;
-    }
-    @keyframes fairy-fade {
-      0% { opacity:1; transform: scale(1) }
-      70% { opacity:0.69; }
-      100% { opacity:0; transform: scale(0.7);}
-    }
-    @media (max-width: 540px) {
-      .card { padding: 1.2rem 0.3rem 1.6rem 0.3rem; max-width:97vw;}
-      .title { font-size: 1.27rem; }
-      .baile-img { max-width: 97vw; }
-    }
-    /* Mobile tap fairy effect */
-    @media (hover:none) and (pointer:coarse) {
-      .card:active {
-        box-shadow: 0 0 70px #ffe7b0a3 !important;
-        border-color: #fff3a6;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="star-rain" aria-hidden="true"></div>
-  <main class="card" role="main" aria-label="Convite pra baile de máscaras">
-    <h1 class="title" tabindex="0">Segredos & Máscaras</h1>
-    <p class="subtitle" tabindex="0">Um baile para poucos, onde tudo é mistério</p>
-    <img
-      src="baile-save.jpeg"
-      alt="Convite baile de máscaras"
-      class="baile-img"
-      draggable="false"
-      tabindex="0"
-    />
-    <div class="phrase" id="phrase" aria-live="polite">
-      Vista sua máscara e entregue-se ao inesperado.
-    </div>
-    <div class="date" tabindex="0">21/02/2026</div>
-  </main>
-  <script>
-    // Frases elegantes que alternam com fade
-    const frases = [
-      "Vista sua máscara e entregue-se ao inesperado.",
-      "Ninguém saberá de onde você veio.",
-      "Todo segredo ganha vida sob o véu da noite.",
-      "Entre no jogo do mistério sem regras.",
-      "21 de fevereiro de 2026 — salve este dia."
-    ];
-    let idx = 0;
-    const phraseDiv = document.getElementById('phrase');
-    function trocaFrase() {
-      phraseDiv.style.opacity = 0;
-      setTimeout(() => {
-        phraseDiv.textContent = frases[idx];
-        phraseDiv.style.opacity = 1;
-        idx = (idx + 1) % frases.length;
-      }, 420);
-    }
-    setInterval(trocaFrase, 3000);
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Baile de Máscaras — <span class="celebrant-name">Thamires Feres</span> · 21/02/2026</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  </head>
+  <body>
+    <div class="site-bg" aria-hidden="true"></div>
+    <header class="site-header">
+      <div class="brand">
+        <h1>Baile de Máscaras</h1>
+        <p class="lead">Comemoração aos 30 Anos de <span class="celebrant-name">Thamires Feres</span></p>
+      </div>
+      <button class="hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="main-nav" aria-label="Navegação principal">
+        <a href="/">Início</a>
+        <a href="/pages/convite.html">Convite</a>
+        <a href="/pages/codigo-vestes.html">Código de Vestes</a>
+        <a href="/pages/premio.html">Prêmio</a>
+        <a href="/pages/votacao.html">Votação</a>
+        <a href="/pages/confirmacao-simples.html">Confirmação</a>
+        <a href="/pages/tributos.html">Tributos</a>
+      </nav>
+    </header>
 
-    // Chuva de pontinhos dourados
-    const rain = document.querySelector('.star-rain');
-    const TOTAL_STARS = 60;
-    function criaStar() {
-      const star = document.createElement('div');
-      star.className = 'star';
-      const size = Math.random() * 2.9 + 1.6;
-      star.style.width = star.style.height = size + 'px';
-      star.style.left = (Math.random() * 100) + 'vw';
-      star.style.animationDuration = (1.75 + Math.random() * 1.85) + 's';
-      star.style.opacity = (0.37 + Math.random() * 0.56).toFixed(2);
-      rain.appendChild(star);
-      setTimeout(() => {
-        rain.removeChild(star);
-      }, 3000);
-    }
-    // Ciclo inicial cheio
-    setInterval(()=>{ if(rain.childElementCount<TOTAL_STARS) criaStar(); },110);
-    for(let i=0;i<TOTAL_STARS;i++) setTimeout(criaStar, i*95);
+    <main class="hero" role="main">
+      <article class="hero-card">
+        <div class="hero-left">
+          <h2 class="hero-title">Baile de Máscaras em Comemoração aos 30 Anos de <span class="celebrant-name">Thamires Feres</span></h2>
+          <img src="/images/flourish.svg" alt="ornamento" class="ornament" aria-hidden="true">
+          <p class="hero-text">Uma noite de encanto, música e intrigas, escrita com a elegância e o romantismo que lembram os salões mais requintados da alta sociedade. Venha encantar-se com máscaras, segredos e olhares que atravessam o salão.</p>
+          
+          <!-- Countdown Timer -->
+          <div class="countdown" id="countdown">
+            <div class="countdown-item">
+              <div class="countdown-value" id="days">00</div>
+              <div class="countdown-label">Dias</div>
+            </div>
+            <div class="countdown-item">
+              <div class="countdown-value" id="hours">00</div>
+              <div class="countdown-label">Horas</div>
+            </div>
+            <div class="countdown-item">
+              <div class="countdown-value" id="minutes">00</div>
+              <div class="countdown-label">Minutos</div>
+            </div>
+            <div class="countdown-item">
+              <div class="countdown-value" id="seconds">00</div>
+              <div class="countdown-label">Segundos</div>
+            </div>
+          </div>
+          
+          <div class="actions">
+            <a class="btn primary" href="/pages/convite.html">Ver Convite Oficial</a>
+            <a class="btn secondary" href="/pages/confirmacao-simples.html">Confirmar Presença</a>
+          </div>
+          <p class="date">21 de fevereiro de 2026 às 20h — Casa Festa, Av. Olegário Maciel, 201</p>
+        </div>
+        <aside>
+          <img src="/images/baile-hero.jpg" alt="Baile de Máscaras - <span class='celebrant-name'>Thamires Feres</span>" class="hero-image" width="420" height="560" style="border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,0.5);border:3px solid rgba(232,197,116,0.2);object-fit:cover">
+        </aside>
+      </article>
+    </main>
 
-    // Mouse fairy effect (trilha mágica do mouse)
-    document.addEventListener('mousemove', e => {
-      const fairy = document.createElement('div');
-      fairy.className = 'fairy';
-      fairy.style.left = (e.clientX - 6) + 'px';
-      fairy.style.top = (e.clientY - 6) + 'px';
-      document.body.appendChild(fairy);
-      setTimeout(()=>document.body.removeChild(fairy), 800);
-    });
+    <footer class="site-footer">
+      <p>Feito com esmero para uma noite inesquecível — Inspirado por Bridgerton.</p>
+    </footer>
 
-    // Fairy tap para mobile (faz trilha mágica onde toca)
-    document.addEventListener('touchmove', e => {
-      if(e.touches && e.touches.length) {
-        const touch = e.touches[0];
-        const fairy = document.createElement('div');
-        fairy.className = 'fairy';
-        fairy.style.left = (touch.clientX - 6) + 'px';
-        fairy.style.top = (touch.clientY - 6) + 'px';
-        document.body.appendChild(fairy);
-        setTimeout(()=>document.body.removeChild(fairy), 700);
-      }
-    });
-  </script>
-</body>
+    <script src="/js/main.js" defer></script>
+  </body>
 </html>
