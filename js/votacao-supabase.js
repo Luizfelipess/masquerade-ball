@@ -9,11 +9,15 @@
 // 1. INICIALIZAÇÃO
 // ========================================
 
+let autoRefreshInterval = null;
+let ultimoNumeroLooks = 0;
+let jaVotou = false; // Flag local para controle de voto único
+
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('Sistema de votação inicializado');
   
   // Verificar se votação está liberada
-  await verificarVotacaoLiberada();
+  const liberada = await verificarVotacaoLiberada();
   
   // Carregar galeria de looks
   await carregarGaleria();
@@ -23,40 +27,86 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Setup preview de foto
   setupFotoPreview();
+  
+  // Se votação liberada, iniciar auto-refresh a cada 30 segundos
+  if (liberada) {
+    iniciarAutoRefresh();
+  }
 });
 
 // ========================================
 // 2. VERIFICAR SE VOTAÇÃO ESTÁ LIBERADA
 // ========================================
 
+// Função auxiliar para desabilitar votação
+function desabilitarVotacao(mensagem) {
+  const botoes = document.querySelectorAll('.btn-vote');
+  botoes.forEach(btn => {
+    btn.disabled = true;
+    btn.textContent = '🔒 Voto Já Registrado';
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+  });
+  
+  const note = document.getElementById('voting-note');
+  if (note) {
+    note.textContent = `🔒 ${mensagem}`;
+    note.style.color = 'var(--error, red)';
+  }
+}
+
+// Função auxiliar para desabilitar envio
+function desabilitarEnvio(mensagem) {
+  const form = document.getElementById('voto-form');
+  if (form) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '🔒 Look Já Enviado';
+      submitBtn.style.opacity = '0.5';
+    }
+    
+    // Desabilitar todos os inputs
+    const inputs = form.querySelectorAll('input, textarea');
+    inputs.forEach(input => input.disabled = true);
+  }
+  
+  const note = document.getElementById('envio-note');
+  if (note) {
+    note.textContent = `🔒 ${mensagem}`;
+    note.style.color = 'var(--error, red)';
+  }
+}
+
 async function verificarVotacaoLiberada() {
   try {
     const { data, error } = await supabase
       .from('config')
-      .select('votacao_liberada')
+      .select('valor')
+      .eq('chave', 'votacao_liberada')
       .single();
     
     if (error) throw error;
     
-    const liberada = data?.votacao_liberada || false;
+    // Converter string para boolean
+    const liberada = data?.valor === 'true';
     
     // Atualizar UI baseado no status
-    const form = document.getElementById('voto-form');
-    const galeria = document.getElementById('galeria-looks');
+    const secaoVotacao = document.getElementById('secao-votacao');
+    const secaoEnvio = document.getElementById('secao-envio');
     const note = document.getElementById('voting-note');
     
     if (liberada) {
-      // Votação liberada - mostrar tudo
-      form.style.display = 'block';
-      galeria.style.display = 'grid';
-      note.textContent = '✅ Votação liberada! Envie seu look e vote no melhor traje da noite.';
+      // Votação liberada - mostrar ambas seções
+      secaoVotacao.style.display = 'block';
+      secaoEnvio.style.display = 'block';
+      note.textContent = '✅ Votação liberada! Vote no melhor look e, se desejar, envie o seu também.';
       note.style.color = 'var(--gold)';
     } else {
-      // Votação bloqueada
-      form.querySelector('button[type="submit"]').disabled = true;
-      form.querySelector('button[type="submit"]').textContent = '🔒 Envio Bloqueado';
-      galeria.style.display = 'none';
-      note.textContent = '⏳ A votação será liberada na noite do evento. Por enquanto, apenas visualização.';
+      // Votação bloqueada - ocultar tudo
+      secaoVotacao.style.display = 'none';
+      secaoEnvio.style.display = 'none';
+      note.textContent = '⏳ A votação será liberada na noite do evento. Por enquanto, aguarde!';
       note.style.color = 'var(--muted)';
     }
     
@@ -74,14 +124,10 @@ async function verificarVotacaoLiberada() {
 
 async function carregarGaleria() {
   try {
-    showLoading('Carregando galeria de looks...');
-    
     const { data: looks, error } = await supabase
       .from('looks')
       .select('*')
       .order('votos', { ascending: false });
-    
-    hideLoading();
     
     if (error) throw error;
     
@@ -89,28 +135,57 @@ async function carregarGaleria() {
     
     if (!looks || looks.length === 0) {
       galeriaDiv.innerHTML = '<p style="text-align:center;color:var(--muted);grid-column:1/-1">Ainda não há looks enviados. Seja o primeiro! 👑</p>';
+      ultimoNumeroLooks = 0;
       return;
     }
     
+    // Atualizar contador
+    const novoNumero = looks.length;
+    if (novoNumero !== ultimoNumeroLooks && ultimoNumeroLooks > 0) {
+      console.log(`📸 Novos looks detectados! ${ultimoNumeroLooks} → ${novoNumero}`);
+    }
+    ultimoNumeroLooks = novoNumero;
+    
     // Renderizar cada look
-    galeriaDiv.innerHTML = looks.map(look => `
-      <div class="gallery-item" data-look-id="${look.id}">
-        <img src="${look.foto_url}" alt="Look de ${look.nome}" loading="lazy">
-        <div class="gallery-info">
-          <h4>${look.nome}</h4>
-          ${look.descricao ? `<p>${look.descricao}</p>` : ''}
-          <div class="vote-section">
-            <span class="vote-count">❤️ ${look.votos} votos</span>
-            <button class="btn-vote" onclick="votarLook(${look.id}, '${look.nome}')">
-              Votar Neste Look
-            </button>
+    galeriaDiv.innerHTML = looks.map(look => {
+      console.log('📸 Renderizando look:', { id: look.id, nome: look.nome, type: typeof look.id });
+      return `
+        <div class="gallery-item" data-look-id="${look.id}">
+          <img src="${look.foto_url}" alt="Look de ${look.nome}" loading="lazy">
+          <div class="gallery-info">
+            <h4>${look.nome}</h4>
+            ${look.descricao ? `<p>${look.descricao}</p>` : ''}
+            <div class="vote-section">
+              <span class="vote-count">❤️ ${look.votos} votos</span>
+              <button class="btn-vote" data-look-id="${look.id}" data-look-nome="${look.nome.replace(/"/g, '&quot;')}">
+                Votar Neste Look
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
+    
+    // Adicionar event listeners nos botões de votar
+    const botoesVotar = galeriaDiv.querySelectorAll('.btn-vote');
+    botoesVotar.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const lookId = btn.dataset.lookId;
+        const lookNome = btn.dataset.lookNome;
+        
+        // Debug e validação
+        console.log('🗳️ Votando:', { lookId, lookNome, type: typeof lookId });
+        
+        if (!lookId || lookId === 'undefined' || lookId === 'null') {
+          showError('Erro', 'ID do look inválido. Recarregue a página.');
+          return;
+        }
+        
+        votarLook(lookId, lookNome);
+      });
+    });
     
   } catch (error) {
-    hideLoading();
     console.error('Erro ao carregar galeria:', error);
     showError('Erro', 'Não foi possível carregar a galeria de looks.');
   }
@@ -125,6 +200,14 @@ function setupFormularioEnvio() {
   
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    // 🛡️ PROTEÇÃO 1: Rate limiting
+    try {
+      window.AntiFraude.verificarRateLimit('enviar_look', 5, 30000);
+    } catch (error) {
+      showError('Muitas Tentativas', error.message);
+      return;
+    }
     
     // Verificar novamente se votação está liberada
     const liberada = await verificarVotacaoLiberada();
@@ -147,7 +230,13 @@ function setupFormularioEnvio() {
     }
     
     if (cpf.length !== 11) {
-      showError('CPF Inválido', 'Por favor, digite um CPF válido (11 dígitos).');
+      showError('CPF Inválido', 'Por favor, digite um CPF válido com 11 dígitos.');
+      return;
+    }
+    
+    // 🛡️ PROTEÇÃO 2: Validar CPF com dígitos verificadores (anti-fraude)
+    if (!window.AntiFraude.validarCPF(cpf)) {
+      showError('CPF Inválido', 'O CPF digitado não é válido. Verifique os números.');
       return;
     }
     
@@ -156,7 +245,13 @@ function setupFormularioEnvio() {
       return;
     }
     
-    // Verificar se já enviou look
+    // 🛡️ PROTEÇÃO 3: Verificar tamanho da foto (máx 5MB)
+    if (foto.size > 5 * 1024 * 1024) {
+      showError('Foto Muito Grande', 'A foto deve ter no máximo 5MB. Tire uma nova foto ou escolha outra.');
+      return;
+    }
+    
+    // 🛡️ PROTEÇÃO 4: Verificar se já enviou look NO BANCO DE DADOS (única fonte de verdade)
     try {
       showLoading('Verificando se você já enviou um look...');
       
@@ -169,7 +264,7 @@ function setupFormularioEnvio() {
       hideLoading();
       
       if (lookExistente) {
-        showError('Look Já Enviado', 'Você já enviou um look. Cada pessoa pode enviar apenas uma foto.');
+        showError('Look Já Enviado', 'Este CPF já enviou um look. Cada pessoa pode enviar apenas uma foto.');
         return;
       }
     } catch (error) {
@@ -234,12 +329,15 @@ async function enviarLook(nome, cpf, descricao, foto) {
       `Obrigado, ${nome}! Seu look foi enviado com sucesso. Boa sorte na votação!`
     );
     
-    // Limpar formulário
-    document.getElementById('voto-form').reset();
+    // Desabilitar formulário (apenas nesta sessão)
+    desabilitarEnvio('Look enviado com sucesso! Obrigado pela participação.');
+    
+    // Limpar preview
     document.getElementById('foto-preview').style.display = 'none';
     
-    // Recarregar galeria
-    setTimeout(() => carregarGaleria(), 1000);
+    // Recarregar galeria automaticamente (sem reload da página)
+    console.log('🔄 Atualizando galeria...');
+    setTimeout(() => carregarGaleria(), 2000);
     
   } catch (error) {
     hideLoading();
@@ -253,6 +351,25 @@ async function enviarLook(nome, cpf, descricao, foto) {
 // ========================================
 
 async function votarLook(lookId, nomeLook) {
+  // Verificar se já votou nesta sessão
+  if (jaVotou) {
+    showError('Voto Já Registrado', 'Você já votou nesta sessão. Cada pessoa pode votar apenas uma vez.');
+    return;
+  }
+  
+  // 🛡️ PROTEÇÃO 1: Verificar rate limiting
+  try {
+    window.AntiFraude.verificarRateLimit('votar', 5, 30000);
+  } catch (error) {
+    showError('Muitas Tentativas', error.message);
+    return;
+  }
+  
+  // 🛡️ PROTEÇÃO 2: Verificar se DevTools está aberto
+  if (window.AntiFraude.devtoolsAberto()) {
+    console.warn('⚠️ DevTools detectado - votação monitorada');
+  }
+  
   // Verificar se votação está liberada
   const liberada = await verificarVotacaoLiberada();
   if (!liberada) {
@@ -260,14 +377,13 @@ async function votarLook(lookId, nomeLook) {
     return;
   }
   
-  // Pedir CPF do votante
-  showConfirm(
-    '🗳 Confirmar Voto',
-    `Deseja votar no look de ${nomeLook}?\n\nDigite seu CPF para registrar seu voto (apenas um voto por CPF):`,
-    async () => {
-      // Criar input para CPF
-      const cpfVotante = prompt('Digite seu CPF (apenas números):');
-      
+  // Pedir CPF do votante usando modal customizado
+  showPrompt(
+    '🗳️ Confirmar Voto',
+    `Você está votando no look de <strong style="color: var(--gold);">${nomeLook}</strong>.<br><br>Digite seu CPF para registrar seu voto (apenas um voto por CPF):`,
+    '000.000.000-00',
+    async (cpfVotante) => {
+      // Callback quando usuário confirma
       if (!cpfVotante) {
         showError('Voto Cancelado', 'É necessário informar o CPF para votar.');
         return;
@@ -276,37 +392,45 @@ async function votarLook(lookId, nomeLook) {
       const cpfLimpo = cpfVotante.replace(/\D/g, '');
       
       if (cpfLimpo.length !== 11) {
-        showError('CPF Inválido', 'Por favor, digite um CPF válido (11 dígitos).');
+        showError('CPF Inválido', 'Por favor, digite um CPF válido com 11 dígitos.');
         return;
       }
       
-      // Verificar se já votou
+      // 🛡️ PROTEÇÃO 3: Validar CPF com dígitos verificadores (anti-fraude)
+      if (!window.AntiFraude.validarCPF(cpfLimpo)) {
+        showError('CPF Inválido', 'O CPF digitado não é válido. Verifique os números.');
+        return;
+      }
+      
+      // 🛡️ PROTEÇÃO 4: Verificar se já votou NO BANCO DE DADOS (única fonte de verdade)
       try {
-        showLoading('Registrando seu voto...');
+        showLoading('Verificando voto...');
         
-        const { data: votoExistente, error: checkError } = await supabase
+        const { data: votosExistentes, error: checkError } = await supabase
           .from('votos')
           .select('id')
-          .eq('cpf_votante', cpfLimpo)
-          .single();
+          .eq('cpf_votante', cpfLimpo);
         
-        if (votoExistente) {
+        if (checkError) throw checkError;
+        
+        if (votosExistentes && votosExistentes.length > 0) {
           hideLoading();
-          showError('Voto Já Registrado', 'Você já votou. Cada pessoa pode votar apenas uma vez.');
+          showError('Voto Já Registrado', 'Este CPF já votou. Cada pessoa pode votar apenas uma vez.');
           return;
         }
       } catch (error) {
-        // Se não encontrou (error.code === 'PGRST116'), está OK
-        if (error.code !== 'PGRST116') {
-          hideLoading();
-          console.error('Erro ao verificar voto:', error);
-          showError('Erro', 'Erro ao verificar voto anterior.');
-          return;
-        }
+        hideLoading();
+        console.error('Erro ao verificar voto:', error);
+        showError('Erro', 'Erro ao verificar voto anterior.');
+        return;
       }
       
       // Registrar voto
       try {
+        showLoading('Registrando seu voto...');
+        
+        console.log('📝 Inserindo voto:', { lookId, cpfLimpo });
+        
         // 1. Adicionar voto na tabela votos
         const { error: votoError } = await supabase
           .from('votos')
@@ -315,30 +439,40 @@ async function votarLook(lookId, nomeLook) {
             cpf_votante: cpfLimpo
           }]);
         
-        if (votoError) throw votoError;
+        if (votoError) {
+          console.error('❌ Erro ao inserir voto:', votoError);
+          throw votoError;
+        }
+        
+        console.log('✅ Voto inserido com sucesso');
         
         // 2. Incrementar contador de votos do look
-        const { error: updateError } = await supabase.rpc('incrementar_votos', {
-          look_id_param: lookId
-        });
+        // Buscar votos atuais
+        const { data: lookAtual, error: getError } = await supabase
+          .from('looks')
+          .select('votos')
+          .eq('id', lookId)
+          .single();
         
-        if (updateError) {
-          // Fallback: fazer manualmente se a function não existir
-          const { data: lookAtual, error: getError } = await supabase
-            .from('looks')
-            .select('votos')
-            .eq('id', lookId)
-            .single();
-          
-          if (getError) throw getError;
-          
-          const { error: incError } = await supabase
-            .from('looks')
-            .update({ votos: lookAtual.votos + 1 })
-            .eq('id', lookId);
-          
-          if (incError) throw incError;
+        if (getError) {
+          console.error('❌ Erro ao buscar look:', getError);
+          throw getError;
         }
+        
+        console.log('📊 Votos atuais:', lookAtual.votos);
+        
+        // Atualizar contador
+        const { error: incError } = await supabase
+          .from('looks')
+          .update({ votos: (lookAtual.votos || 0) + 1 })
+          .eq('id', lookId);
+        
+        if (incError) {
+          console.error('❌ Erro ao incrementar votos:', incError);
+          throw incError;
+        }
+        
+        console.log('✅ Contador atualizado para:', (lookAtual.votos || 0) + 1);
         
         hideLoading();
         
@@ -348,8 +482,15 @@ async function votarLook(lookId, nomeLook) {
           `Seu voto no look de ${nomeLook} foi registrado com sucesso!`
         );
         
-        // Recarregar galeria para atualizar contadores
-        setTimeout(() => carregarGaleria(), 1000);
+        // Marcar que já votou nesta sessão
+        jaVotou = true;
+        
+        // Desabilitar todos os botões de votação (apenas nesta sessão)
+        desabilitarVotacao('Voto registrado! Obrigado pela participação.');
+        
+        // Recarregar galeria para atualizar contadores (sem reload da página)
+        console.log('🔄 Atualizando contadores de votos...');
+        setTimeout(() => carregarGaleria(), 2000);
         
       } catch (error) {
         hideLoading();
@@ -358,14 +499,13 @@ async function votarLook(lookId, nomeLook) {
       }
     },
     () => {
-      // Cancelar voto
+      // Callback quando usuário cancela
       showInfo('Voto Cancelado', 'Você pode votar em outro look se preferir.');
-    }
+    },
+    'text',
+    'cpf'
   );
 }
-
-// Expor função globalmente para onclick
-window.votarLook = votarLook;
 
 // ========================================
 // 7. PREVIEW DE FOTO
@@ -392,3 +532,67 @@ function setupFotoPreview() {
     }
   });
 }
+
+// ========================================
+// 8. AUTO-REFRESH DA GALERIA
+// ========================================
+
+/**
+ * Inicia atualização automática da galeria a cada 15 segundos
+ * Atualiza APENAS a galeria, sem reload da página
+ */
+function iniciarAutoRefresh() {
+  console.log('🔄 Auto-refresh da galeria ativado (15s)');
+  
+  autoRefreshInterval = setInterval(async () => {
+    try {
+      // Buscar apenas contagem de looks
+      const { count, error } = await supabase
+        .from('looks')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) throw error;
+      
+      // Se houver novos looks ou mudança de votos, recarregar galeria
+      if (count !== ultimoNumeroLooks) {
+        console.log(`📸 Novos looks detectados: ${ultimoNumeroLooks} → ${count}`);
+        await carregarGaleria();
+      } else {
+        // Mesmo sem novos looks, atualizar contadores de votos
+        await carregarGaleria();
+      }
+    } catch (error) {
+      console.error('Erro no auto-refresh:', error);
+    }
+  }, 15000); // 15 segundos (mais frequente para mostrar votos em tempo real)
+}
+
+/**
+ * Para o auto-refresh (útil quando página não está mais ativa)
+ */
+function pararAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+    console.log('🔄 Auto-refresh pausado');
+  }
+}
+
+// Pausar auto-refresh quando a página não está visível
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    pararAutoRefresh();
+  } else {
+    // Recarregar galeria imediatamente ao voltar
+    carregarGaleria();
+    // Reiniciar auto-refresh se votação estiver liberada
+    verificarVotacaoLiberada().then(liberada => {
+      if (liberada) {
+        iniciarAutoRefresh();
+      }
+    });
+  }
+});
+
+// Limpar interval ao sair da página
+window.addEventListener('beforeunload', pararAutoRefresh);

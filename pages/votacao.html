@@ -28,7 +28,7 @@
       <a href="/pages/convite.html">Convite</a>
       <a href="/pages/codigo-vestes.html">Código de Vestes</a>
       <a href="/pages/premio.html">Prêmio</a>
-      <a href="/pages/votacao.html">Votação</a>
+      <a href="/pages/votacao.html" class="menu-votacao" style="display:none">Votação</a>
       <a href="/pages/confirmacao-simples.html">Confirmação</a>
       <a href="/pages/tributos.html">Tributos</a>
     </nav>
@@ -42,7 +42,7 @@
       </div>
       <p class="lead-para">A escolha do Diamante da Temporada seguirá os costumes mais justos da corte.</p>
       <div class="elegant-text">
-        "Cada convidado deverá <strong>enviar uma fotografia de seu traje</strong> acompanhada de uma breve descrição, através do próprio site do evento.
+        "Cada convidado <strong>pode enviar uma fotografia de seu traje</strong> (opcional) e <strong>votar no melhor look da noite</strong>.
         <br><br>
         Durante o baile, mensagens de lembrete serão enviadas para incentivar a participação dos nobres presentes.
         <br><br>
@@ -53,35 +53,59 @@
         ⚠️ Observação: esta aba será liberada apenas na noite do evento."
       </div>
 
-      <!-- Galeria de Looks para Votação -->
-      <div id="galeria-looks" class="gallery-grid" style="display:none">
-        <!-- Será preenchido dinamicamente via JS -->
+      <!-- SEÇÃO 1: GALERIA DE LOOKS PARA VOTAÇÃO -->
+      <div id="secao-votacao" style="display:none; margin-top: 40px;">
+        <div class="h-deco">
+          <h3 style="color:var(--gold); text-align:center;">🗳 Vote no Melhor Look</h3>
+          <img src="/images/flourish.svg" alt="ornamento" class="ornament" aria-hidden="true">
+        </div>
+        <p style="text-align:center; color:var(--muted); margin-bottom:20px;">Escolha seu look favorito da noite!</p>
+        
+        <div id="galeria-looks" class="gallery-grid">
+          <!-- Será preenchido dinamicamente via JS -->
+        </div>
       </div>
 
-      <!-- Formulário de Envio do Look -->
-      <form id="voto-form" class="card" style="margin-top:12px">
-        <h3 style="color:var(--gold);text-align:center;margin:0 0 20px;font-family:'Playfair Display',serif">📸 Enviar Meu Look</h3>
-        <div class="form-row">
-          <label class="small">Nome do(a) Convidado(a)<br>
-            <input name="nome" class="input" placeholder="Ex.: Ana Correa" required>
-          </label>
-          <label class="small">CPF (único voto por CPF)<br>
-            <input name="cpf" class="input" placeholder="000.000.000-00" required>
-          </label>
+      <!-- SEÇÃO 2: FORMULÁRIO DE ENVIO DO LOOK (OPCIONAL) -->
+      <div id="secao-envio" style="display:none; margin-top: 40px;">
+        <div class="h-deco">
+          <h3 style="color:var(--gold); text-align:center;">📸 Enviar Meu Look (Opcional)</h3>
+          <img src="/images/flourish.svg" alt="ornamento" class="ornament" aria-hidden="true">
         </div>
-        <label class="small" style="display:block;margin-top:10px">Descrição breve do traje<br>
-          <textarea name="descricao" class="input" rows="3" placeholder="Conte o que inspirou seu traje — opcional"></textarea>
-        </label>
-        <label class="small" style="display:block;margin-top:10px">Foto do traje (tire agora ou escolha da galeria)<br>
-          <input type="file" id="foto-traje" accept="image/*" capture="environment" required>
-          <p style="font-size:0.8rem;color:var(--muted);margin:6px 0 0">💡 No celular, você pode tirar a foto diretamente</p>
-        </label>
-        <img id="foto-preview" alt="Pré-visualização" style="display:none;max-width:360px;margin-top:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04)">
-        <div style="margin-top:12px">
-          <button class="btn primary" type="submit">Enviar Meu Look</button>
-        </div>
-        <p id="voting-note" class="note">Importante: a votação pública será liberada na noite do evento. Antes disso, o envio é bloqueado.</p>
-      </form>
+        <p style="text-align:center; color:var(--muted); margin-bottom:20px;">
+          Enviar seu look é opcional! Você pode participar da votação mesmo sem enviar foto.
+        </p>
+        <p style="text-align:center; color:var(--muted); margin-bottom:20px;">
+          Enviar seu look é opcional! Você pode participar da votação mesmo sem enviar foto.
+        </p>
+        
+        <form id="voto-form" class="card">
+          <div class="form-row">
+            <label class="small">Nome do(a) Convidado(a)<br>
+              <input name="nome" class="input" placeholder="Ex.: Ana Correa" required>
+            </label>
+            <label class="small">CPF (único envio por CPF)<br>
+              <input name="cpf" class="input" data-mask="cpf" placeholder="000.000.000-00" required>
+            </label>
+          </div>
+          <label class="small" style="display:block;margin-top:10px">Descrição breve do traje<br>
+            <textarea name="descricao" class="input" rows="3" placeholder="Conte o que inspirou seu traje — opcional"></textarea>
+          </label>
+          <label class="small" style="display:block;margin-top:10px">Foto do traje (tire agora ou escolha da galeria)<br>
+            <input type="file" id="foto-traje" accept="image/*" capture="environment" required>
+            <p style="font-size:0.8rem;color:var(--muted);margin:6px 0 0">💡 No celular, você pode tirar a foto diretamente</p>
+          </label>
+          <img id="foto-preview" alt="Pré-visualização" style="display:none;max-width:360px;margin-top:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04)">
+          <div style="margin-top:12px">
+            <button class="btn primary" type="submit">Enviar Meu Look</button>
+          </div>
+          <p id="envio-note" class="note">Você pode enviar seu look e votar separadamente.</p>
+        </form>
+      </div>
+
+      <p id="voting-note" class="note" style="text-align:center; margin-top:30px;">
+        Aguardando liberação da votação...
+      </p>
     </section>
   </div>
 
@@ -90,13 +114,12 @@
   </footer>
 
   <script src="/js/main.js" defer></script>
-<<<<<<< HEAD
+  <script src="/js/masks-validation.js"></script>
   <script src="/js/modals.js"></script>
   <script src="/js/supabase-config.js"></script>
   <script src="/js/supabase-functions.js"></script>
+  <script src="/js/anti-fraude.js"></script>
+  <script src="/js/menu-votacao.js"></script>
   <script src="/js/votacao-supabase.js"></script>
-=======
-  <script src="/js/voting-gallery.js" defer></script>
->>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
 </body>
 </html>

@@ -48,6 +48,63 @@ COMMENT ON FUNCTION incrementar_votos(BIGINT) IS 'Incrementa atomicamente o cont
 COMMENT ON COLUMN public.rsvps.idade IS 'Idade do responsável pela confirmação';
 COMMENT ON COLUMN public.dependentes.idade IS 'Idade do dependente';
 
+-- 8. Verificar e criar tabela config se não existir
+DO $$ 
+BEGIN
+    -- Criar tabela config se não existir
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'config') THEN
+        CREATE TABLE public.config (
+            id BIGINT PRIMARY KEY DEFAULT 1,
+            votacao_liberada BOOLEAN DEFAULT false,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+        
+        -- Inserir registro padrão
+        INSERT INTO public.config (id, votacao_liberada, created_at)
+        VALUES (1, false, NOW());
+        
+        RAISE NOTICE 'Tabela config criada com sucesso';
+    ELSE
+        -- Tabela existe, verificar se coluna votacao_liberada existe
+        IF NOT EXISTS (
+            SELECT FROM information_schema.columns 
+            WHERE table_schema = 'public' 
+            AND table_name = 'config' 
+            AND column_name = 'votacao_liberada'
+        ) THEN
+            ALTER TABLE public.config ADD COLUMN votacao_liberada BOOLEAN DEFAULT false;
+            RAISE NOTICE 'Coluna votacao_liberada adicionada';
+        END IF;
+        
+        -- Garantir que existe pelo menos um registro
+        IF NOT EXISTS (SELECT 1 FROM public.config WHERE id = 1) THEN
+            INSERT INTO public.config (id, votacao_liberada, created_at)
+            VALUES (1, false, NOW());
+            RAISE NOTICE 'Registro padrão inserido na tabela config';
+        END IF;
+    END IF;
+END $$;
+
+-- 9. Habilitar RLS na tabela config (permitir leitura pública)
+ALTER TABLE public.config ENABLE ROW LEVEL SECURITY;
+
+-- Política para permitir leitura pública da configuração
+DROP POLICY IF EXISTS "Permitir leitura pública da config" ON public.config;
+CREATE POLICY "Permitir leitura pública da config"
+ON public.config FOR SELECT
+TO public
+USING (true);
+
+-- Política para permitir apenas inserção/atualização autenticada (admin)
+DROP POLICY IF EXISTS "Apenas admin pode modificar config" ON public.config;
+CREATE POLICY "Apenas admin pode modificar config"
+ON public.config FOR ALL
+TO public
+USING (true); -- Por enquanto permite tudo, você pode restringir com auth.uid() quando implementar autenticação
+
+-- 10. Adicionar comentário na tabela
+COMMENT ON TABLE public.config IS 'Configurações gerais do sistema de votação';
+
 -- ============================================
 -- VERIFICAÇÃO DO SISTEMA
 -- Execute estas queries para verificar se tudo está OK

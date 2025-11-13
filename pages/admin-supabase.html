@@ -113,6 +113,89 @@
       flex-wrap:wrap;
     }
     
+    /* Botão de ver votantes */
+    .btn-ver-votantes {
+      background: rgba(232,197,116,0.2) !important;
+      color: var(--gold) !important;
+      border: 1px solid var(--gold) !important;
+      padding: 10px 16px !important;
+      border-radius: 8px !important;
+      cursor: pointer !important;
+      margin-top: 12px !important;
+      width: 100% !important;
+      font-weight: 600 !important;
+      transition: all 0.3s !important;
+      font-size: 0.9rem !important;
+    }
+    
+    .btn-ver-votantes:hover {
+      background: rgba(232,197,116,0.3) !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 4px 12px rgba(232,197,116, 0.3) !important;
+    }
+    
+    .btn-ver-votantes-ranking {
+      background: rgba(232,197,116,0.15) !important;
+      color: var(--gold) !important;
+      border: 1px solid rgba(232,197,116,0.3) !important;
+      padding: 8px 12px !important;
+      border-radius: 6px !important;
+      cursor: pointer !important;
+      font-size: 0.85rem !important;
+      font-weight: 600 !important;
+      transition: all 0.3s !important;
+    }
+    
+    .btn-ver-votantes-ranking:hover {
+      background: rgba(232,197,116,0.25) !important;
+      border-color: var(--gold) !important;
+      transform: scale(1.05) !important;
+    }
+    
+    /* Botão de excluir look */
+    .btn-delete-look {
+      background: #d32f2f !important;
+      color: #fff !important;
+      border: none !important;
+      padding: 10px 16px !important;
+      border-radius: 8px !important;
+      cursor: pointer !important;
+      margin-top: 12px !important;
+      width: 100% !important;
+      font-weight: 600 !important;
+      transition: all 0.3s !important;
+      font-size: 0.9rem !important;
+    }
+    
+    .btn-delete-look:hover {
+      background: #b71c1c !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4) !important;
+    }
+    
+    .btn-delete-look:active {
+      transform: translateY(0) !important;
+    }
+    
+    .btn-delete-look-ranking {
+      background: #d32f2f !important;
+      color: #fff !important;
+      border: none !important;
+      padding: 8px 12px !important;
+      border-radius: 6px !important;
+      cursor: pointer !important;
+      margin-top: 8px !important;
+      font-size: 0.85rem !important;
+      font-weight: 600 !important;
+      transition: all 0.3s !important;
+    }
+    
+    .btn-delete-look-ranking:hover {
+      background: #b71c1c !important;
+      transform: scale(1.05) !important;
+      box-shadow: 0 2px 8px rgba(211, 47, 47, 0.4) !important;
+    }
+    
     /* === RESPONSIVO ADMIN === */
     @media (max-width: 768px) {
       .admin-login {
@@ -192,7 +275,7 @@
       <a href="/pages/convite.html">Convite</a>
       <a href="/pages/codigo-vestes.html">Código de Vestes</a>
       <a href="/pages/premio.html">Prêmio</a>
-      <a href="/pages/votacao.html">Votação</a>
+      <a href="/pages/votacao.html" class="menu-votacao" style="display:none">Votação</a>
       <a href="/pages/confirmacao-nova.html">Confirmação</a>
       <a href="/pages/tributos.html">Tributos</a>
     </nav>
@@ -250,10 +333,25 @@
 
         <!-- Ações -->
         <div class="admin-actions">
-          <button class="btn primary" id="liberar-votacao-btn">🗳️ Liberar Votação</button>
-          <button class="btn secondary" id="bloquear-votacao-btn">🔒 Bloquear Votação</button>
-          <button class="btn secondary" id="exportar-csv-btn">📥 Exportar CSV</button>
-          <button class="btn secondary" id="refresh-btn">🔄 Atualizar Dados</button>
+          <!-- Toggle de Votação -->
+          <div style="display:flex;align-items:center;gap:16px;padding:16px;background:rgba(212,175,55,0.05);border-radius:12px;border:1px solid rgba(212,175,55,0.2)">
+            <div style="flex:1">
+              <strong style="color:var(--gold);display:block;margin-bottom:4px">🗳️ Controle de Votação</strong>
+              <small style="color:var(--muted)">Ativar/desativar votação e envio de looks</small>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="votacao-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+            <span id="votacao-status" style="min-width:80px;text-align:right;font-weight:600;color:var(--muted)">Bloqueada</span>
+          </div>
+          
+          <!-- Botões de Exportação -->
+          <div style="display:flex;gap:12px;margin-top:16px">
+            <button class="btn secondary" id="exportar-csv-btn" style="flex:1">� Exportar CSV</button>
+            <button class="btn secondary" id="exportar-excel-btn" style="flex:1">� Exportar Excel</button>
+            <button class="btn secondary" id="refresh-btn">🔄 Atualizar</button>
+          </div>
         </div>
 
         <div style="border-top:1px solid rgba(232,197,116,0.15);margin:32px 0"></div>
@@ -262,6 +360,9 @@
         <div style="display:flex;gap:16px;margin-bottom:24px;border-bottom:2px solid rgba(232,197,116,0.1)">
           <button class="tab-btn active" data-tab="confirmacoes" style="background:none;border:none;color:var(--accent-soft);padding:12px 20px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.3s">
             👥 Confirmações
+          </button>
+          <button class="tab-btn" data-tab="looks" style="background:none;border:none;color:var(--accent-soft);padding:12px 20px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.3s">
+            📸 Looks Enviados
           </button>
           <button class="tab-btn" data-tab="resultados" style="background:none;border:none;color:var(--accent-soft);padding:12px 20px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.3s">
             🏆 Resultados Votação
@@ -272,6 +373,13 @@
         <div class="tab-content active" id="tab-confirmacoes">
           <h3 style="color:var(--gold);margin:0 0 16px">Lista de Confirmações</h3>
           <div id="rsvps-list"></div>
+        </div>
+
+        <!-- Tab: Looks Enviados -->
+        <div class="tab-content" id="tab-looks" style="display:none">
+          <h3 style="color:var(--gold);margin:0 0 16px">Todos os Looks Enviados</h3>
+          <p class="note">📸 Visualize todos os looks que foram subidos pelos convidados (ordem de envio)</p>
+          <div id="looks-list" class="gallery-grid" style="margin-top:24px"></div>
         </div>
 
         <!-- Tab: Resultados -->
@@ -288,12 +396,13 @@
     <p>Feito com esmero para uma noite inesquecível — Inspirado por Bridgerton.</p>
   </footer>
 
-<<<<<<< HEAD
+  <!-- SheetJS para exportar Excel -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  
   <script src="/js/modals.js"></script>
-=======
->>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
   <script src="/js/supabase-config.js"></script>
   <script src="/js/supabase-functions.js"></script>
+  <script src="/js/menu-votacao.js"></script>
   <script src="/js/main.js" defer></script>
   <script src="/js/admin-supabase.js" defer></script>
 </body>

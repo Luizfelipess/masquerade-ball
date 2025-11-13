@@ -2,6 +2,18 @@
   "rewrites": [
     { "source": "/", "destination": "/index.html" }
   ],
+  "redirects": [
+    {
+      "source": "/pages",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/pages/",
+      "destination": "/",
+      "permanent": false
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

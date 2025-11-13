@@ -28,7 +28,7 @@
       <a href="/pages/convite.html">Convite</a>
       <a href="/pages/codigo-vestes.html">Código de Vestes</a>
       <a href="/pages/premio.html">Prêmio</a>
-      <a href="/pages/votacao.html">Votação</a>
+      <a href="/pages/votacao.html" class="menu-votacao" style="display:none">Votação</a>
       <a href="/pages/confirmacao-simples.html">Confirmação</a>
       <a href="/pages/tributos.html">Tributos</a>
     </nav>
@@ -57,7 +57,7 @@
         
         <div class="form-row" style="margin-top:12px">
           <label class="small">Telefone *<br>
-            <input id="telefone-responsavel" name="telefone" class="input" required placeholder="(00) 90000-0000">
+            <input id="telefone-responsavel" name="telefone" class="input" data-mask="telefone" required placeholder="(00) 90000-0000">
           </label>
         </div>
 
@@ -100,10 +100,12 @@
     <p>Feito com esmero para uma noite inesquecível — Inspirado por Bridgerton.</p>
   </footer>
 
+  <script src="/js/masks-validation.js"></script>
   <script src="/js/modals.js"></script>
   <script src="/js/main.js" defer></script>
   <script src="/js/supabase-config.js"></script>
   <script src="/js/supabase-functions.js"></script>
+  <script src="/js/menu-votacao.js"></script>
   <script>
     // Variáveis globais
     let dependentes = [];
@@ -156,11 +158,13 @@
       
       // Validação básica
       if (!nomeResponsavel || !idadeResponsavel || !telefone) {
-<<<<<<< HEAD
         showError('Campos Obrigatórios', 'Por favor, preencha todos os campos obrigatórios (nome, idade e telefone).');
-=======
-        alert('❌ Preencha todos os campos obrigatórios');
->>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
+        return;
+      }
+      
+      // Validar telefone
+      if (!validarTelefone(telefone)) {
+        showError('Telefone Inválido', 'Por favor, digite um telefone válido no formato (00) 00000-0000');
         return;
       }
       
@@ -173,11 +177,7 @@
         const idade = parseInt(card.querySelector('.dep-idade').value);
         
         if (!nome || !idade) {
-<<<<<<< HEAD
           showError('Dados Incompletos', 'Por favor, preencha nome e idade de todos os acompanhantes.');
-=======
-          alert('❌ Preencha nome e idade de todos os acompanhantes');
->>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
           return;
         }
         
@@ -194,26 +194,19 @@
       
       console.log('📤 Enviando confirmação:', dados);
       
-<<<<<<< HEAD
       showLoading('Salvando sua confirmação...');
       
-=======
->>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
       try {
         // Salvar no Supabase
         const result = await salvarRSVPSimples(dados);
         
-<<<<<<< HEAD
         hideLoading();
         
-=======
->>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
         if (result.error) {
           throw new Error(result.error.message);
         }
         
         // Sucesso!
-<<<<<<< HEAD
         showSuccess(
           'Confirmação Registrada! 🎉',
           `Obrigado, ${nomeResponsavel}! Sua presença foi confirmada com sucesso. Aguardamos você no baile!`,
@@ -226,28 +219,16 @@
           document.getElementById('success-message').style.display = 'block';
           document.getElementById('success-message').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 1500);
-=======
-        document.getElementById('rsvp-form').style.display = 'none';
-        document.getElementById('success-message').style.display = 'block';
-        
-        // Scroll suave para a mensagem
-        document.getElementById('success-message').scrollIntoView({ behavior: 'smooth', block: 'center' });
->>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
         
         console.log('✅ Confirmação salva:', result);
         
       } catch (error) {
-<<<<<<< HEAD
         hideLoading();
         console.error('❌ Erro ao salvar:', error);
         showError(
           'Erro ao Confirmar',
           `Não foi possível salvar sua confirmação: ${error.message}\n\nVerifique sua conexão e tente novamente.`
         );
-=======
-        console.error('❌ Erro ao salvar:', error);
-        alert(`❌ Erro ao confirmar presença: ${error.message}\n\nVerifique se o Supabase está configurado corretamente.`);
->>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
       }
     });
 
