@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Confirmação de Presença — Baile de Máscaras</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <h1>Baile de Máscaras</h1>
+      <p class="lead">Comemoração aos 30 Anos de <span class="celebrant-name">Thamires Feres</span></p>
+    </div>
+    <button class="hamburger" aria-label="Menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav class="main-nav" aria-label="Navegação principal">
+      <a href="/">Início</a>
+      <a href="/pages/convite.html">Convite</a>
+      <a href="/pages/codigo-vestes.html">Código de Vestes</a>
+      <a href="/pages/premio.html">Prêmio</a>
+      <a href="/pages/votacao.html">Votação</a>
+      <a href="/pages/confirmacao-simples.html">Confirmação</a>
+      <a href="/pages/tributos.html">Tributos</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <section class="card">
+      <div class="h-deco">
+        <h2>🪶 Confirmação de Presença</h2>
+        <img src="/images/flourish.svg" alt="ornamento" class="ornament" aria-hidden="true">
+      </div>
+      
+      <p class="lead-para">Para que as acomodações e os festejos estejam à altura da realeza, solicita-se a confirmação de presença com a maior brevidade possível.</p>
+      
+      <form id="rsvp-form" class="card" style="margin-top:12px">
+        <h3 style="color:var(--gold);text-align:center;margin:0 0 24px;font-family:'Playfair Display',serif">👤 Responsável pela Confirmação</h3>
+        
+        <div class="form-row">
+          <label class="small">Nome Completo *<br>
+            <input id="nome-responsavel" name="nome" class="input" required placeholder="Ex.: Maria das Flores">
+          </label>
+          <label class="small">Idade *<br>
+            <input type="number" id="idade-responsavel" name="idade" class="input" required placeholder="Ex.: 30" min="1" max="120">
+          </label>
+        </div>
+        
+        <div class="form-row" style="margin-top:12px">
+          <label class="small">Telefone *<br>
+            <input id="telefone-responsavel" name="telefone" class="input" required placeholder="(00) 90000-0000">
+          </label>
+        </div>
+
+        <!-- Lista de Dependentes -->
+        <div style="margin-top:32px;border-top:1px solid rgba(232,197,116,0.2);padding-top:24px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="color:var(--gold);margin:0;font-family:'Playfair Display',serif">👥 Acompanhantes</h3>
+            <button type="button" id="add-dependente-btn" class="btn primary" style="font-size:0.9rem;padding:8px 16px">
+              ➕ Adicionar Pessoa
+            </button>
+          </div>
+          
+          <p class="note" style="margin-bottom:16px">Adicione todas as pessoas que virão com você (incluindo crianças)</p>
+          
+          <div id="dependentes-list">
+            <!-- Dependentes serão adicionados aqui dinamicamente -->
+          </div>
+        </div>
+
+        <!-- Botões -->
+        <div style="margin-top:32px;text-align:center">
+          <button class="btn primary" type="submit" style="font-size:1.1rem;padding:14px 32px">
+            ✅ Confirmar Presença
+          </button>
+        </div>
+      </form>
+
+      <div id="success-message" style="display:none;margin-top:24px;padding:20px;background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);border-radius:8px;text-align:center">
+        <p style="color:#4CAF50;font-size:1.1rem;margin:0">
+          ✅ Confirmação registrada com sucesso!
+        </p>
+        <p style="color:var(--muted);font-size:0.9rem;margin:8px 0 0">
+          Nos vemos no baile! 🎭✨
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <footer class="site-footer">
+    <p>Feito com esmero para uma noite inesquecível — Inspirado por Bridgerton.</p>
+  </footer>
+
+  <script src="/js/modals.js"></script>
+  <script src="/js/main.js" defer></script>
+  <script src="/js/supabase-config.js"></script>
+  <script src="/js/supabase-functions.js"></script>
+  <script>
+    // Variáveis globais
+    let dependentes = [];
+    let dependenteCounter = 0;
+
+    // Adicionar dependente
+    document.getElementById('add-dependente-btn').addEventListener('click', () => {
+      dependenteCounter++;
+      const id = `dep-${dependenteCounter}`;
+      
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.id = id;
+      card.style.cssText = 'margin-bottom:12px;padding:16px;background:rgba(255,255,255,0.02)';
+      
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h4 style="color:var(--gold);margin:0;font-size:1rem">Pessoa ${dependenteCounter}</h4>
+          <button type="button" class="remove-dep-btn" data-id="${id}" style="background:rgba(244,67,54,0.2);color:#f44336;border:1px solid rgba(244,67,54,0.3);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.85rem">
+            ❌ Remover
+          </button>
+        </div>
+        <div class="form-row">
+          <label class="small">Nome Completo *<br>
+            <input class="input dep-nome" required placeholder="Ex.: João Silva">
+          </label>
+          <label class="small">Idade *<br>
+            <input type="number" class="input dep-idade" required placeholder="Ex.: 25" min="0" max="120">
+          </label>
+        </div>
+      `;
+      
+      document.getElementById('dependentes-list').appendChild(card);
+      
+      // Adicionar evento de remover
+      card.querySelector('.remove-dep-btn').addEventListener('click', (e) => {
+        const cardId = e.target.getAttribute('data-id');
+        document.getElementById(cardId).remove();
+        dependentes = dependentes.filter(d => d.cardId !== cardId);
+      });
+    });
+
+    // Submit do formulário
+    document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const nomeResponsavel = document.getElementById('nome-responsavel').value.trim();
+      const idadeResponsavel = parseInt(document.getElementById('idade-responsavel').value);
+      const telefone = document.getElementById('telefone-responsavel').value.trim();
+      
+      // Validação básica
+      if (!nomeResponsavel || !idadeResponsavel || !telefone) {
+        showError('Campos Obrigatórios', 'Por favor, preencha todos os campos obrigatórios (nome, idade e telefone).');
+        return;
+      }
+      
+      // Coletar dependentes
+      const depCards = document.querySelectorAll('#dependentes-list > div');
+      const dependentesData = [];
+      
+      for (const card of depCards) {
+        const nome = card.querySelector('.dep-nome').value.trim();
+        const idade = parseInt(card.querySelector('.dep-idade').value);
+        
+        if (!nome || !idade) {
+          showError('Dados Incompletos', 'Por favor, preencha nome e idade de todos os acompanhantes.');
+          return;
+        }
+        
+        dependentesData.push({ nome, idade });
+      }
+      
+      // Preparar dados
+      const dados = {
+        nome: nomeResponsavel,
+        idade: idadeResponsavel,
+        telefone: telefone,
+        dependentes: dependentesData
+      };
+      
+      console.log('📤 Enviando confirmação:', dados);
+      
+      showLoading('Salvando sua confirmação...');
+      
+      try {
+        // Salvar no Supabase
+        const result = await salvarRSVPSimples(dados);
+        
+        hideLoading();
+        
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+        
+        // Sucesso!
+        showSuccess(
+          'Confirmação Registrada! 🎉',
+          `Obrigado, ${nomeResponsavel}! Sua presença foi confirmada com sucesso. Aguardamos você no baile!`,
+          'Entendido'
+        );
+        
+        // Esconder formulário e mostrar mensagem de sucesso
+        setTimeout(() => {
+          document.getElementById('rsvp-form').style.display = 'none';
+          document.getElementById('success-message').style.display = 'block';
+          document.getElementById('success-message').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 1500);
+        
+        console.log('✅ Confirmação salva:', result);
+        
+      } catch (error) {
+        hideLoading();
+        console.error('❌ Erro ao salvar:', error);
+        showError(
+          'Erro ao Confirmar',
+          `Não foi possível salvar sua confirmação: ${error.message}\n\nVerifique sua conexão e tente novamente.`
+        );
+      }
+    });
+
+    // Função para salvar RSVP simplificado
+    async function salvarRSVPSimples(dados) {
+      try {
+        // 1. Inserir responsável (com idade)
+        const { data: rsvp, error: rsvpError } = await supabase
+          .from('rsvps')
+          .insert({
+            nome: dados.nome,
+            telefone: dados.telefone,
+            idade: dados.idade, // Idade do responsável
+            cpf: null,
+            email: null
+          })
+          .select()
+          .single();
+        
+        if (rsvpError) throw rsvpError;
+        
+        console.log('✅ Responsável salvo:', rsvp);
+        
+        // 2. Inserir dependentes (se houver)
+        if (dados.dependentes && dados.dependentes.length > 0) {
+          const dependentesInsert = dados.dependentes.map(dep => ({
+            rsvp_id: rsvp.id,
+            nome: dep.nome,
+            idade: dep.idade,
+            tipo: dep.idade < 12 ? 'crianca' : 'adulto'
+          }));
+          
+          const { data: deps, error: depsError } = await supabase
+            .from('dependentes')
+            .insert(dependentesInsert)
+            .select();
+          
+          if (depsError) throw depsError;
+          
+          console.log('✅ Dependentes salvos:', deps);
+        }
+        
+        return { 
+          success: true, 
+          rsvp, 
+          message: `Confirmação registrada! Total: ${1 + (dados.dependentes?.length || 0)} pessoa(s)` 
+        };
+        
+      } catch (error) {
+        console.error('❌ Erro no Supabase:', error);
+        return { error };
+      }
+    }
+  </script>
+</body>
+</html>

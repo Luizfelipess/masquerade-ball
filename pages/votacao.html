@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Votação — Diamante da Temporada</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <h1>Baile de Máscaras</h1>
+      <p class="lead">Comemoração aos 30 Anos de <span class="celebrant-name">Thamires Feres</span></p>
+    </div>
+    <button class="hamburger" aria-label="Menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav class="main-nav" aria-label="Navegação principal">
+      <a href="/">Início</a>
+      <a href="/pages/convite.html">Convite</a>
+      <a href="/pages/codigo-vestes.html">Código de Vestes</a>
+      <a href="/pages/premio.html">Prêmio</a>
+      <a href="/pages/votacao.html">Votação</a>
+      <a href="/pages/confirmacao-simples.html">Confirmação</a>
+      <a href="/pages/tributos.html">Tributos</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <section class="card">
+      <div class="h-deco">
+        <h2>🗳 A Votação Real</h2>
+        <img src="/images/flourish.svg" alt="ornamento" class="ornament" aria-hidden="true">
+      </div>
+      <p class="lead-para">A escolha do Diamante da Temporada seguirá os costumes mais justos da corte.</p>
+      <div class="elegant-text">
+        "Cada convidado deverá <strong>enviar uma fotografia de seu traje</strong> acompanhada de uma breve descrição, através do próprio site do evento.
+        <br><br>
+        Durante o baile, mensagens de lembrete serão enviadas para incentivar a participação dos nobres presentes.
+        <br><br>
+        A votação será <strong>única por CPF</strong>, e apenas <strong>Sua Majestade, <span class="celebrant-name">Thamires Feres</span></strong>, terá acesso aos resultados antes do grande anúncio.
+        <br><br>
+        Ao final da noite, os votos serão computados, e a Rainha anunciará, perante todos, quem se tornará o legítimo <em>Diamante da Temporada</em>.
+        <br><br>
+        ⚠️ Observação: esta aba será liberada apenas na noite do evento."
+      </div>
+
+      <!-- Galeria de Looks para Votação -->
+      <div id="galeria-looks" class="gallery-grid" style="display:none">
+        <!-- Será preenchido dinamicamente via JS -->
+      </div>
+
+      <!-- Formulário de Envio do Look -->
+      <form id="voto-form" class="card" style="margin-top:12px">
+        <h3 style="color:var(--gold);text-align:center;margin:0 0 20px;font-family:'Playfair Display',serif">📸 Enviar Meu Look</h3>
+        <div class="form-row">
+          <label class="small">Nome do(a) Convidado(a)<br>
+            <input name="nome" class="input" placeholder="Ex.: Ana Correa" required>
+          </label>
+          <label class="small">CPF (único voto por CPF)<br>
+            <input name="cpf" class="input" placeholder="000.000.000-00" required>
+          </label>
+        </div>
+        <label class="small" style="display:block;margin-top:10px">Descrição breve do traje<br>
+          <textarea name="descricao" class="input" rows="3" placeholder="Conte o que inspirou seu traje — opcional"></textarea>
+        </label>
+        <label class="small" style="display:block;margin-top:10px">Foto do traje (tire agora ou escolha da galeria)<br>
+          <input type="file" id="foto-traje" accept="image/*" capture="environment" required>
+          <p style="font-size:0.8rem;color:var(--muted);margin:6px 0 0">💡 No celular, você pode tirar a foto diretamente</p>
+        </label>
+        <img id="foto-preview" alt="Pré-visualização" style="display:none;max-width:360px;margin-top:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04)">
+        <div style="margin-top:12px">
+          <button class="btn primary" type="submit">Enviar Meu Look</button>
+        </div>
+        <p id="voting-note" class="note">Importante: a votação pública será liberada na noite do evento. Antes disso, o envio é bloqueado.</p>
+      </form>
+    </section>
+  </div>
+
+  <footer class="site-footer">
+    <p>Feito com esmero para uma noite inesquecível — Inspirado por Bridgerton.</p>
+  </footer>
+
+  <script src="/js/main.js" defer></script>
+  <script src="/js/modals.js"></script>
+  <script src="/js/supabase-config.js"></script>
+  <script src="/js/supabase-functions.js"></script>
+  <script src="/js/votacao-supabase.js"></script>
+</body>
+</html>
