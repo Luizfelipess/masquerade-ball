@@ -41,9 +41,12 @@
     
     if (votacaoLink) {
       if (votacaoLiberada) {
-        // Votação liberada - MOSTRAR link
+        // Votação liberada - MOSTRAR link com opacidade total
         votacaoLink.style.display = '';  // Remove o inline style
         votacaoLink.style.removeProperty('display');  // Garante remoção
+        votacaoLink.style.opacity = '1';  // Garante opacidade total
+        votacaoLink.style.pointerEvents = 'auto';  // Garante que seja clicável
+        votacaoLink.classList.remove('disabled');  // Remove classe disabled se existir
         console.log('✅ Menu de votação VISÍVEL (votação liberada)');
       } else {
         // Votação bloqueada - MANTER OCULTO

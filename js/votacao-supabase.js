@@ -13,6 +13,11 @@ let autoRefreshInterval = null;
 let ultimoNumeroLooks = 0;
 let jaVotou = false; // Flag local para controle de voto único
 
+// Paginação
+let looksCarregados = [];
+let indiceAtual = 0;
+const LOOKS_POR_PAGINA = 20;
+
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('Sistema de votação inicializado');
   
@@ -119,10 +124,10 @@ async function verificarVotacaoLiberada() {
 }
 
 // ========================================
-// 3. CARREGAR GALERIA DE LOOKS
+// 3. CARREGAR GALERIA DE LOOKS (COM PAGINAÇÃO)
 // ========================================
 
-async function carregarGaleria() {
+async function carregarGaleria(resetar = false) {
   try {
     const { data: looks, error } = await supabase
       .from('looks')
@@ -139,6 +144,16 @@ async function carregarGaleria() {
       return;
     }
     
+    // Se resetar ou se é primeira carga, reiniciar
+    if (resetar || looksCarregados.length === 0) {
+      looksCarregados = looks;
+      indiceAtual = 0;
+      galeriaDiv.innerHTML = '';
+    } else {
+      // Atualizar lista se houver novos looks
+      looksCarregados = looks;
+    }
+    
     // Atualizar contador
     const novoNumero = looks.length;
     if (novoNumero !== ultimoNumeroLooks && ultimoNumeroLooks > 0) {
@@ -146,50 +161,119 @@ async function carregarGaleria() {
     }
     ultimoNumeroLooks = novoNumero;
     
-    // Renderizar cada look
-    galeriaDiv.innerHTML = looks.map(look => {
-      console.log('📸 Renderizando look:', { id: look.id, nome: look.nome, type: typeof look.id });
-      return `
-        <div class="gallery-item" data-look-id="${look.id}">
-          <img src="${look.foto_url}" alt="Look de ${look.nome}" loading="lazy">
-          <div class="gallery-info">
-            <h4>${look.nome}</h4>
-            ${look.descricao ? `<p>${look.descricao}</p>` : ''}
-            <div class="vote-section">
-              <span class="vote-count">❤️ ${look.votos} votos</span>
-              <button class="btn-vote" data-look-id="${look.id}" data-look-nome="${look.nome.replace(/"/g, '&quot;')}">
-                Votar Neste Look
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
-    
-    // Adicionar event listeners nos botões de votar
-    const botoesVotar = galeriaDiv.querySelectorAll('.btn-vote');
-    botoesVotar.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const lookId = btn.dataset.lookId;
-        const lookNome = btn.dataset.lookNome;
-        
-        // Debug e validação
-        console.log('🗳️ Votando:', { lookId, lookNome, type: typeof lookId });
-        
-        if (!lookId || lookId === 'undefined' || lookId === 'null') {
-          showError('Erro', 'ID do look inválido. Recarregue a página.');
-          return;
-        }
-        
-        votarLook(lookId, lookNome);
-      });
-    });
+    // Renderizar próxima página de looks
+    renderizarProximaPagina();
     
   } catch (error) {
     console.error('Erro ao carregar galeria:', error);
     showError('Erro', 'Não foi possível carregar a galeria de looks.');
   }
 }
+
+function renderizarProximaPagina() {
+  const galeriaDiv = document.getElementById('galeria-looks');
+  
+  // Calcular range da página atual
+  const inicio = indiceAtual;
+  const fim = Math.min(inicio + LOOKS_POR_PAGINA, looksCarregados.length);
+  const looksPagina = looksCarregados.slice(inicio, fim);
+  
+  // Renderizar looks da página
+  const htmlLooks = looksPagina.map(look => {
+    return `
+      <div class="gallery-item" data-look-id="${look.id}">
+        <img src="${look.foto_url}" alt="Look de ${look.nome}" loading="lazy">
+        <div class="gallery-info">
+          <h4>${look.nome}</h4>
+          ${look.descricao ? `<p>${look.descricao}</p>` : ''}
+          <div class="vote-section">
+            <span class="vote-count">❤️ ${look.votos} votos</span>
+            <button class="btn-vote" data-look-id="${look.id}" data-look-nome="${look.nome.replace(/"/g, '&quot;')}">
+              Votar Neste Look
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Adicionar ao final da galeria
+  galeriaDiv.insertAdjacentHTML('beforeend', htmlLooks);
+  
+  // Atualizar índice
+  indiceAtual = fim;
+  
+  // Adicionar/atualizar botão "Carregar Mais"
+  atualizarBotaoCarregarMais();
+  
+  // Adicionar event listeners nos novos botões de votar
+  const botoesVotar = galeriaDiv.querySelectorAll('.btn-vote');
+  botoesVotar.forEach(btn => {
+    // Remover listeners duplicados
+    btn.replaceWith(btn.cloneNode(true));
+  });
+  
+  // Re-adicionar listeners
+  const novosBotoesVotar = galeriaDiv.querySelectorAll('.btn-vote');
+  novosBotoesVotar.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lookId = btn.dataset.lookId;
+      const lookNome = btn.dataset.lookNome;
+      
+      console.log('🗳️ Votando:', { lookId, lookNome });
+      
+      if (!lookId || lookId === 'undefined' || lookId === 'null') {
+        showError('Erro', 'ID do look inválido. Recarregue a página.');
+        return;
+      }
+      
+      votarLook(lookId, lookNome);
+    });
+  });
+  
+  console.log(`📄 Página carregada: ${inicio + 1}-${fim} de ${looksCarregados.length} looks`);
+}
+
+function atualizarBotaoCarregarMais() {
+  // Remover botão existente se houver
+  const btnExistente = document.getElementById('btn-carregar-mais');
+  if (btnExistente) {
+    btnExistente.remove();
+  }
+  
+  // Verificar se há mais looks para carregar
+  if (indiceAtual < looksCarregados.length) {
+    const galeriaDiv = document.getElementById('galeria-looks');
+    const restantes = looksCarregados.length - indiceAtual;
+    
+    const btnHTML = `
+      <div id="btn-carregar-mais" style="grid-column:1/-1;text-align:center;margin-top:24px">
+        <button class="btn primary" onclick="renderizarProximaPagina()" style="min-width:250px">
+          📸 Carregar Mais Looks (${restantes} restantes)
+        </button>
+        <p style="color:var(--muted);font-size:0.9rem;margin-top:12px">
+          Mostrando ${indiceAtual} de ${looksCarregados.length} looks
+        </p>
+      </div>
+    `;
+    
+    galeriaDiv.insertAdjacentHTML('beforeend', btnHTML);
+  } else if (looksCarregados.length > LOOKS_POR_PAGINA) {
+    // Mostrar mensagem de fim
+    const galeriaDiv = document.getElementById('galeria-looks');
+    const msgHTML = `
+      <div id="btn-carregar-mais" style="grid-column:1/-1;text-align:center;margin-top:24px">
+        <p style="color:var(--gold);font-size:1rem;font-weight:600">
+          ✨ Todos os ${looksCarregados.length} looks foram carregados!
+        </p>
+      </div>
+    `;
+    galeriaDiv.insertAdjacentHTML('beforeend', msgHTML);
+  }
+}
+
+// Expor função globalmente para o botão
+window.renderizarProximaPagina = renderizarProximaPagina;
 
 // ========================================
 // 4. SETUP FORMULÁRIO DE ENVIO
@@ -286,17 +370,82 @@ function setupFormularioEnvio() {
 // 5. ENVIAR LOOK (UPLOAD FOTO + SALVAR DB)
 // ========================================
 
+// Função auxiliar para comprimir imagem
+async function comprimirImagem(file, maxWidth = 1200, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        // Criar canvas para redimensionar
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // Redimensionar mantendo proporção
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Converter para blob com qualidade reduzida
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              console.log(`📦 Compressão: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(blob.size / 1024 / 1024).toFixed(2)}MB (${((1 - blob.size/file.size) * 100).toFixed(0)}% redução)`);
+              resolve(blob);
+            } else {
+              reject(new Error('Falha ao comprimir imagem'));
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      
+      img.onerror = () => reject(new Error('Falha ao carregar imagem'));
+      img.src = e.target.result;
+    };
+    
+    reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
+    reader.readAsDataURL(file);
+  });
+}
+
 async function enviarLook(nome, cpf, descricao, foto) {
   try {
-    showLoading('Enviando seu look... 📸');
+    showLoading('Preparando sua foto... 🖼️');
+    
+    // COMPRESSÃO: Reduzir tamanho da imagem antes do upload
+    let fotoParaUpload = foto;
+    
+    // Comprimir apenas se for maior que 500KB
+    if (foto.size > 500 * 1024) {
+      try {
+        fotoParaUpload = await comprimirImagem(foto, 1200, 0.8);
+        showLoading('Enviando seu look... 📸');
+      } catch (compressError) {
+        console.warn('⚠️ Erro ao comprimir, enviando original:', compressError);
+        // Se falhar compressão, usa foto original
+      }
+    }
     
     // 1. Fazer upload da foto para Supabase Storage
     const nomeArquivo = `${cpf}_${Date.now()}.jpg`;
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('looks')
-      .upload(nomeArquivo, foto, {
+      .upload(nomeArquivo, fotoParaUpload, {
         cacheControl: '3600',
-        upsert: false
+        upsert: false,
+        contentType: 'image/jpeg'
       });
     
     if (uploadError) throw uploadError;
@@ -337,7 +486,7 @@ async function enviarLook(nome, cpf, descricao, foto) {
     
     // Recarregar galeria automaticamente (sem reload da página)
     console.log('🔄 Atualizando galeria...');
-    setTimeout(() => carregarGaleria(), 2000);
+    setTimeout(() => carregarGaleria(true), 2000); // true = resetar paginação
     
   } catch (error) {
     hideLoading();
@@ -490,7 +639,7 @@ async function votarLook(lookId, nomeLook) {
         
         // Recarregar galeria para atualizar contadores (sem reload da página)
         console.log('🔄 Atualizando contadores de votos...');
-        setTimeout(() => carregarGaleria(), 2000);
+        setTimeout(() => carregarGaleria(true), 2000); // true = resetar paginação
         
       } catch (error) {
         hideLoading();
