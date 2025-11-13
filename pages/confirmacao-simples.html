@@ -156,7 +156,11 @@
       
       // Validação básica
       if (!nomeResponsavel || !idadeResponsavel || !telefone) {
+<<<<<<< HEAD
         showError('Campos Obrigatórios', 'Por favor, preencha todos os campos obrigatórios (nome, idade e telefone).');
+=======
+        alert('❌ Preencha todos os campos obrigatórios');
+>>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
         return;
       }
       
@@ -169,7 +173,11 @@
         const idade = parseInt(card.querySelector('.dep-idade').value);
         
         if (!nome || !idade) {
+<<<<<<< HEAD
           showError('Dados Incompletos', 'Por favor, preencha nome e idade de todos os acompanhantes.');
+=======
+          alert('❌ Preencha nome e idade de todos os acompanhantes');
+>>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
           return;
         }
         
@@ -186,19 +194,26 @@
       
       console.log('📤 Enviando confirmação:', dados);
       
+<<<<<<< HEAD
       showLoading('Salvando sua confirmação...');
       
+=======
+>>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
       try {
         // Salvar no Supabase
         const result = await salvarRSVPSimples(dados);
         
+<<<<<<< HEAD
         hideLoading();
         
+=======
+>>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
         if (result.error) {
           throw new Error(result.error.message);
         }
         
         // Sucesso!
+<<<<<<< HEAD
         showSuccess(
           'Confirmação Registrada! 🎉',
           `Obrigado, ${nomeResponsavel}! Sua presença foi confirmada com sucesso. Aguardamos você no baile!`,
@@ -211,16 +226,28 @@
           document.getElementById('success-message').style.display = 'block';
           document.getElementById('success-message').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 1500);
+=======
+        document.getElementById('rsvp-form').style.display = 'none';
+        document.getElementById('success-message').style.display = 'block';
+        
+        // Scroll suave para a mensagem
+        document.getElementById('success-message').scrollIntoView({ behavior: 'smooth', block: 'center' });
+>>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
         
         console.log('✅ Confirmação salva:', result);
         
       } catch (error) {
+<<<<<<< HEAD
         hideLoading();
         console.error('❌ Erro ao salvar:', error);
         showError(
           'Erro ao Confirmar',
           `Não foi possível salvar sua confirmação: ${error.message}\n\nVerifique sua conexão e tente novamente.`
         );
+=======
+        console.error('❌ Erro ao salvar:', error);
+        alert(`❌ Erro ao confirmar presença: ${error.message}\n\nVerifique se o Supabase está configurado corretamente.`);
+>>>>>>> f83999fc5f5ccc36794af592f47be8169544ff5a
       }
     });
 
