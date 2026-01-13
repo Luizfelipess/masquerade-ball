@@ -56,11 +56,14 @@
 
   /* ========== AUTO LOGIN ========== */
 
-  if(sessionStorage.getItem('admin-logged') === 'true'){
-    loginSection.style.display = 'none';
-    dashboardSection.classList.add('active');
-    carregarDashboard();
-  }
+  // Verificar se já está logado ao carregar a página
+  window.addEventListener('DOMContentLoaded', () => {
+    if(sessionStorage.getItem('admin-logged') === 'true'){
+      loginSection.style.display = 'none';
+      dashboardSection.classList.add('active');
+      carregarDashboard();
+    }
+  });
 
   /* ========== TABS ========== */
 
@@ -186,9 +189,22 @@
       const criancas = dependentes.filter(d => d.tipo === 'crianca');
       
       return `
-        <div class="rsvp-item">
-          <h4>👤 ${rsvp.nome}</h4>
-          <p>📱 <strong>Tel:</strong> ${rsvp.telefone || 'Não informado'}</p>
+        <div class="rsvp-item" data-rsvp-id="${rsvp.id}">
+          <div style="display:flex;justify-content:space-between;align-items:start">
+            <div style="flex:1">
+              <h4>👤 ${rsvp.nome}</h4>
+            </div>
+            <button 
+              class="btn-manage-rsvp" 
+              data-rsvp-id="${rsvp.id}"
+              style="background:rgba(232,197,116,0.2);color:var(--gold);border:1px solid var(--gold);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all 0.3s"
+              title="Gerenciar confirmação"
+            >
+              ⚙️ Gerenciar
+            </button>
+          </div>
+          
+          <p>�📱 <strong>Tel:</strong> ${rsvp.telefone || 'Não informado'}</p>
           ${rsvp.email ? `<p>✉️ <strong>Email:</strong> ${rsvp.email}</p>` : ''}
           ${rsvp.observacoes ? `<p>📝 ${rsvp.observacoes}</p>` : ''}
           
@@ -206,6 +222,22 @@
         </div>
       `;
     }).join('');
+    
+    // Adicionar event listeners aos botões de gerenciar
+    document.querySelectorAll('.btn-manage-rsvp').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const rsvpId = e.target.getAttribute('data-rsvp-id');
+        // Comparar como string (UUID não precisa parseInt)
+        const rsvp = result.rsvps.find(r => r.id === rsvpId || r.id === parseInt(rsvpId));
+        if (rsvp) {
+          console.log('🎯 Botão clicado, RSVP encontrado:', rsvp);
+          window.abrirModalGerenciarRSVP(rsvp);
+        } else {
+          console.error('❌ RSVP não encontrado para ID:', rsvpId);
+          console.log('📋 RSVPs disponíveis:', result.rsvps.map(r => ({id: r.id, nome: r.nome})));
+        }
+      });
+    });
   }
 
   /* ========== CARREGAR LOOKS ENVIADOS ========== */
@@ -678,6 +710,362 @@
   refreshBtn?.addEventListener('click', () => {
     carregarDashboard();
   });
+
+  /* ========== MODAL GERENCIAR RSVP ========== */
+
+  window.abrirModalGerenciarRSVP = function(rsvp) {
+    console.log('🔓 Abrindo modal para:', rsvp);
+    
+    // Remover modal anterior se existir
+    const modalExistente = document.getElementById('modal-gerenciar-rsvp');
+    if (modalExistente) {
+      console.log('⚠️ Removendo modal existente');
+      modalExistente.remove();
+    }
+    
+    const dependentes = rsvp.dependentes || [];
+    const totalPessoas = 1 + dependentes.length;
+    
+    console.log('📋 Dependentes:', dependentes);
+    console.log('👥 Total de pessoas:', totalPessoas);
+    
+    const modalHTML = `
+      <div class="modal-overlay active" id="modal-gerenciar-rsvp" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px">
+        <div class="modal-content" style="background:#1a1a1a;border:2px solid var(--gold);border-radius:16px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;padding:32px">
+          
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:24px">
+            <h3 style="color:var(--gold);margin:0;font-family:'Playfair Display',serif;font-size:1.5rem">
+              ⚙️ Gerenciar Confirmação
+            </h3>
+            <button class="btn-close-modal" style="background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;padding:0;line-height:1">×</button>
+          </div>
+
+          <!-- Titular -->
+          <div style="background:rgba(232,197,116,0.05);border:1px solid rgba(232,197,116,0.2);border-radius:12px;padding:20px;margin-bottom:24px">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
+              <h4 style="color:var(--gold);margin:0;font-size:1.1rem">👤 Titular</h4>
+              <button 
+                class="btn-delete-titular" 
+                data-rsvp-id="${rsvp.id}"
+                style="background:#d32f2f;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.85rem;font-weight:600"
+              >
+                🗑️ Excluir Tudo
+              </button>
+            </div>
+            <p style="color:var(--accent-soft);margin:8px 0;font-size:1rem"><strong>${rsvp.nome}</strong></p>
+            <p style="color:var(--muted);margin:4px 0;font-size:0.9rem">📱 ${rsvp.telefone || 'Não informado'}</p>
+            ${rsvp.email ? `<p style="color:var(--muted);margin:4px 0;font-size:0.9rem">✉️ ${rsvp.email}</p>` : ''}
+            ${rsvp.idade ? `<p style="color:var(--muted);margin:4px 0;font-size:0.9rem">🎂 ${rsvp.idade} anos</p>` : ''}
+            <p style="color:var(--muted);margin:8px 0 0;font-size:0.8rem">✓ ${new Date(rsvp.created_at).toLocaleString('pt-BR')}</p>
+          </div>
+
+          <!-- Dependentes -->
+          ${dependentes.length > 0 ? `
+            <div style="margin-bottom:24px">
+              <h4 style="color:var(--gold);margin:0 0 16px;font-size:1.1rem">👥 Acompanhantes (${dependentes.length})</h4>
+              <div style="display:flex;flex-direction:column;gap:12px" id="lista-dependentes-modal">
+                ${dependentes.map(dep => `
+                  <div class="dependente-item-modal" data-dep-id="${dep.id}" style="background:rgba(255,255,255,0.02);border:1px solid rgba(232,197,116,0.1);border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                      <p style="color:var(--accent-soft);margin:0;font-size:0.95rem">
+                        ${dep.tipo === 'crianca' ? '👶' : '👤'} <strong>${dep.nome}</strong>
+                      </p>
+                      ${dep.idade ? `<p style="color:var(--muted);margin:4px 0 0;font-size:0.85rem">Idade: ${dep.idade} anos</p>` : ''}
+                    </div>
+                    <button 
+                      class="btn-delete-dependente" 
+                      data-dep-id="${dep.id}"
+                      data-dep-nome="${dep.nome}"
+                      style="background:#d32f2f;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.85rem;font-weight:600"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : `
+            <p style="text-align:center;color:var(--muted);padding:20px;font-style:italic">
+              Nenhum acompanhante
+            </p>
+          `}
+
+          <!-- Resumo -->
+          <div style="background:rgba(232,197,116,0.1);border:1px solid var(--gold);border-radius:8px;padding:16px;margin-top:24px">
+            <p style="color:var(--gold);font-weight:600;text-align:center;margin:0;font-size:1.1rem">
+              📊 Total: ${totalPessoas} pessoa(s) confirmada(s)
+            </p>
+          </div>
+
+          <!-- Botão Fechar -->
+          <button class="btn primary btn-close-modal" style="width:100%;margin-top:24px;padding:12px">
+            ✓ Fechar
+          </button>
+        </div>
+      </div>
+    `;
+    
+    // Adicionar modal ao DOM
+    console.log('➕ Adicionando modal ao DOM...');
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Event listeners
+    const modal = document.getElementById('modal-gerenciar-rsvp');
+    
+    if (!modal) {
+      console.error('❌ Modal não foi criado no DOM!');
+      return;
+    }
+    
+    console.log('✅ Modal criado com sucesso:', modal);
+    
+    // Fechar modal
+    modal.querySelectorAll('.btn-close-modal').forEach(btn => {
+      btn.addEventListener('click', () => {
+        console.log('🚪 Fechando modal...');
+        modal.remove();
+      });
+    });
+    
+    // Clicar fora fecha
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+    
+    // Excluir titular (toda a confirmação)
+    modal.querySelector('.btn-delete-titular')?.addEventListener('click', async () => {
+      if (confirm(`❌ Excluir TODA a confirmação de "${rsvp.nome}"?\n\nIsso irá remover o titular e todos os ${dependentes.length} acompanhante(s).\n\nEsta ação não pode ser desfeita!`)) {
+        modal.remove();
+        await excluirConfirmacao(rsvp.id, rsvp.nome);
+      }
+    });
+    
+    // Excluir dependentes individuais
+    modal.querySelectorAll('.btn-delete-dependente').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const depId = e.target.getAttribute('data-dep-id');
+        const depNome = e.target.getAttribute('data-dep-nome');
+        
+        if (confirm(`❌ Excluir o acompanhante "${depNome}"?\n\nEsta ação não pode ser desfeita!`)) {
+          await excluirDependente(depId, depNome, modal);
+        }
+      });
+    });
+  }
+
+  /* ========== EXCLUIR DEPENDENTE ========== */
+
+  window.excluirDependente = async function(depId, depNome, modal) {
+    try {
+      showLoading('Excluindo acompanhante...');
+      
+      const { error } = await window.supabase
+        .from('dependentes')
+        .delete()
+        .eq('id', depId);
+      
+      if (error) throw error;
+      
+      hideLoading();
+      showSuccess('Acompanhante Excluído! 🗑️', `"${depNome}" foi removido da confirmação.`);
+      
+      // Remover do DOM do modal
+      const depItem = modal.querySelector(`[data-dep-id="${depId}"]`);
+      if (depItem) {
+        depItem.style.transition = 'opacity 0.3s';
+        depItem.style.opacity = '0';
+        setTimeout(() => depItem.remove(), 300);
+      }
+      
+      // Recarregar dashboard
+      setTimeout(() => carregarDashboard(), 500);
+      
+    } catch (error) {
+      hideLoading();
+      console.error('Erro ao excluir dependente:', error);
+      showError('Erro ao Excluir', `Não foi possível excluir o acompanhante: ${error.message}`);
+    }
+  }
+
+  /* ========== EXCLUIR CONFIRMAÇÃO ========== */
+
+  async function excluirConfirmacao(rsvpId, rsvpNome) {
+    try {
+      showLoading('Excluindo confirmação...');
+      
+      // 1. Excluir dependentes primeiro (CASCADE pode fazer isso automaticamente, mas vamos garantir)
+      const { error: depsError } = await supabase
+        .from('dependentes')
+        .delete()
+        .eq('rsvp_id', rsvpId);
+      
+      if (depsError) {
+        console.warn('Aviso ao excluir dependentes:', depsError);
+      }
+      
+      // 2. Excluir RSVP
+      const { error: rsvpError } = await supabase
+        .from('rsvps')
+        .delete()
+        .eq('id', rsvpId);
+      
+      if (rsvpError) throw rsvpError;
+      
+      hideLoading();
+      showSuccess('Confirmação Excluída! 🗑️', `A confirmação de "${rsvpNome}" foi removida com sucesso.`);
+      
+      // Recarregar dashboard
+      await carregarDashboard();
+      
+    } catch (error) {
+      hideLoading();
+      console.error('Erro ao excluir confirmação:', error);
+      showError('Erro ao Excluir', `Não foi possível excluir a confirmação: ${error.message}`);
+    }
+  }
+
+  /* ========== ADICIONAR CONFIRMAÇÃO MANUAL ========== */
+
+  document.getElementById('btn-adicionar-confirmacao')?.addEventListener('click', () => {
+    abrirModalAdicionarConfirmacao();
+  });
+
+  function abrirModalAdicionarConfirmacao() {
+    const modalHTML = `
+      <div class="modal-overlay active" id="modal-adicionar-confirmacao" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px">
+        <div class="modal-content" style="background:#1a1a1a;border:2px solid var(--gold);border-radius:16px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;padding:32px">
+          
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:24px">
+            <h3 style="color:var(--gold);margin:0;font-family:'Playfair Display',serif;font-size:1.5rem">
+              ➕ Adicionar Confirmação Manual
+            </h3>
+            <button class="btn-close-modal" style="background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;padding:0;line-height:1">×</button>
+          </div>
+
+          <form id="form-adicionar-confirmacao" style="display:flex;flex-direction:column;gap:16px">
+            <div>
+              <label style="color:var(--accent-soft);font-weight:600;display:block;margin-bottom:8px">Nome Completo *</label>
+              <input type="text" id="add-nome" required style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(232,197,116,0.3);border-radius:8px;color:var(--accent-soft);font-size:1rem">
+            </div>
+
+            <div>
+              <label style="color:var(--accent-soft);font-weight:600;display:block;margin-bottom:8px">Telefone *</label>
+              <input type="tel" id="add-telefone" required placeholder="(11) 99999-9999" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(232,197,116,0.3);border-radius:8px;color:var(--accent-soft);font-size:1rem">
+            </div>
+
+            <div>
+              <label style="color:var(--accent-soft);font-weight:600;display:block;margin-bottom:8px">Email</label>
+              <input type="email" id="add-email" placeholder="exemplo@email.com" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(232,197,116,0.3);border-radius:8px;color:var(--accent-soft);font-size:1rem">
+            </div>
+
+            <div>
+              <label style="color:var(--accent-soft);font-weight:600;display:block;margin-bottom:8px">Idade</label>
+              <input type="number" id="add-idade" min="0" max="120" placeholder="Ex: 25" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(232,197,116,0.3);border-radius:8px;color:var(--accent-soft);font-size:1rem">
+            </div>
+
+            <div>
+              <label style="color:var(--accent-soft);font-weight:600;display:block;margin-bottom:8px">Observações</label>
+              <textarea id="add-observacoes" rows="3" placeholder="Informações adicionais..." style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(232,197,116,0.3);border-radius:8px;color:var(--accent-soft);font-size:1rem;resize:vertical"></textarea>
+            </div>
+
+            <div style="background:rgba(232,197,116,0.1);border:1px solid var(--gold);border-radius:8px;padding:16px;margin-top:8px">
+              <p style="color:var(--muted);font-size:0.9rem;margin:0">
+                💡 <strong>Dica:</strong> Após adicionar, você pode gerenciar e adicionar acompanhantes usando o botão "⚙️ Gerenciar".
+              </p>
+            </div>
+
+            <div style="display:flex;gap:12px;margin-top:16px">
+              <button type="button" class="btn-close-modal" style="flex:1;background:rgba(255,255,255,0.1);color:var(--accent-soft);border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600">
+                Cancelar
+              </button>
+              <button type="submit" style="flex:1;background:var(--gold);color:#000;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.3s">
+                ✓ Adicionar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    const modal = document.getElementById('modal-adicionar-confirmacao');
+    const form = document.getElementById('form-adicionar-confirmacao');
+
+    // Fechar modal
+    modal.querySelectorAll('.btn-close-modal').forEach(btn => {
+      btn.addEventListener('click', () => modal.remove());
+    });
+
+    // Clicar fora fecha
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+
+    // Máscara de telefone
+    const telInput = document.getElementById('add-telefone');
+    telInput.addEventListener('input', (e) => {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      
+      if (value.length <= 10) {
+        value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+      } else {
+        value = value.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+      }
+      
+      e.target.value = value;
+    });
+
+    // Submit do form
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const nome = document.getElementById('add-nome').value.trim();
+      const telefone = document.getElementById('add-telefone').value.trim();
+      const email = document.getElementById('add-email').value.trim() || null;
+      const idade = document.getElementById('add-idade').value ? parseInt(document.getElementById('add-idade').value) : null;
+      const observacoes = document.getElementById('add-observacoes').value.trim() || null;
+
+      if (!nome || !telefone) {
+        showError('Campos Obrigatórios', 'Preencha pelo menos o nome e telefone.');
+        return;
+      }
+
+      try {
+        showLoading('Adicionando confirmação...');
+        modal.remove();
+
+        const { data, error } = await supabase
+          .from('rsvps')
+          .insert({
+            nome,
+            telefone,
+            email,
+            idade,
+            cpf: null,
+            observacoes
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        hideLoading();
+        showSuccess('Confirmação Adicionada! ✅', `${nome} foi confirmado(a) com sucesso!`);
+        
+        // Recarregar dashboard
+        await carregarDashboard();
+
+      } catch (error) {
+        hideLoading();
+        console.error('Erro ao adicionar confirmação:', error);
+        showError('Erro ao Adicionar', `Não foi possível adicionar a confirmação: ${error.message}`);
+      }
+    });
+  }
 
   console.log('✅ Admin Supabase carregado');
 })();

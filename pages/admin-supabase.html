@@ -53,6 +53,7 @@
       border-radius:10px;
       padding:16px;
       margin-bottom:12px;
+      position:relative;
     }
     .rsvp-item h4{
       color:var(--gold);
@@ -63,6 +64,38 @@
       color:var(--accent-soft);
       margin:4px 0;
       font-size:0.95rem;
+    }
+    .btn-delete-rsvp {
+      background:#d32f2f !important;
+      color:#fff !important;
+      border:none !important;
+      padding:6px 12px !important;
+      border-radius:6px !important;
+      cursor:pointer !important;
+      font-size:0.85rem !important;
+      font-weight:600 !important;
+      transition:all 0.3s !important;
+    }
+    .btn-delete-rsvp:hover {
+      background:#b71c1c !important;
+      transform:scale(1.05) !important;
+      box-shadow:0 2px 8px rgba(211,47,47,0.4) !important;
+    }
+    .btn-manage-rsvp {
+      background:rgba(232,197,116,0.2) !important;
+      color:var(--gold) !important;
+      border:1px solid var(--gold) !important;
+      padding:6px 12px !important;
+      border-radius:6px !important;
+      cursor:pointer !important;
+      font-size:0.85rem !important;
+      font-weight:600 !important;
+      transition:all 0.3s !important;
+    }
+    .btn-manage-rsvp:hover {
+      background:rgba(232,197,116,0.3) !important;
+      transform:scale(1.05) !important;
+      box-shadow:0 2px 8px rgba(232,197,116,0.3) !important;
     }
     .dependente-tag{
       display:inline-block;
@@ -369,7 +402,12 @@
 
         <!-- Tab: Confirmações -->
         <div class="tab-content active" id="tab-confirmacoes">
-          <h3 style="color:var(--gold);margin:0 0 16px">Lista de Confirmações</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="color:var(--gold);margin:0">Lista de Confirmações</h3>
+            <button id="btn-adicionar-confirmacao" class="btn" style="background:var(--gold);color:#000;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;border:none;transition:all 0.3s">
+              ➕ Adicionar Confirmação
+            </button>
+          </div>
           <div id="rsvps-list"></div>
         </div>
 
@@ -397,11 +435,10 @@
   <!-- SheetJS para exportar Excel -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
   
-  <script src="/js/modals.js"></script>
-  <script src="/js/supabase-config.js"></script>
-  <script src="/js/supabase-functions.js"></script>
-  <script src="/js/menu-votacao.js"></script>
-  <script src="/js/main.js" defer></script>
-  <script src="/js/admin-supabase.js" defer></script>
+  <script src="/js/modals.js?v=13"></script>
+  <script src="/js/supabase-config.js?v=13"></script>
+  <script src="/js/supabase-functions.js?v=13"></script>
+  <script src="/js/menu-votacao.js?v=13"></script>
+  <script src="/js/admin-supabase.js?v=13" defer></script>
 </body>
 </html>
