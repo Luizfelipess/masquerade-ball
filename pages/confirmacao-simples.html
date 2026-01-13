@@ -100,14 +100,23 @@
     <p>Feito com esmero para uma noite inesquecível — Inspirado por Bridgerton.</p>
   </footer>
 
-  <script src="/js/masks-validation.js"></script>
-  <script src="/js/modals.js"></script>
-  <script src="/js/main.js" defer></script>
-  <script src="/js/supabase-config.js"></script>
-  <script src="/js/supabase-functions.js"></script>
-  <script src="/js/menu-votacao.js"></script>
+  <script src="/js/masks-validation.js?v=6"></script>
+  <script src="/js/modals.js?v=6"></script>
+  <script src="/js/supabase-config.js?v=6"></script>
+  <script src="/js/supabase-functions.js?v=6"></script>
+  <script src="/js/menu-votacao.js?v=6"></script>
+  <!-- main.js REMOVIDO - conflita com o código inline -->
   <script>
-    // Variáveis globais
+    // Aguardar o carregamento completo do Supabase
+    window.addEventListener('DOMContentLoaded', () => {
+      // Verificar se o Supabase foi inicializado
+      if (!window.supabase) {
+        console.error('❌ Supabase não foi inicializado!');
+        showError('Erro de Configuração', 'O sistema de confirmação não está disponível. Entre em contato com os organizadores.');
+        return;
+      }
+
+      // Variáveis globais
     let dependentes = [];
     let dependenteCounter = 0;
 
@@ -149,16 +158,55 @@
     });
 
     // Submit do formulário
-    document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
+    const formElement = document.getElementById('rsvp-form');
+    console.log('🔍 Formulário encontrado:', formElement);
+    
+    formElement.addEventListener('submit', async (e) => {
       e.preventDefault();
+      e.stopImmediatePropagation();
       
-      const nomeResponsavel = document.getElementById('nome-responsavel').value.trim();
-      const idadeResponsavel = parseInt(document.getElementById('idade-responsavel').value);
-      const telefone = document.getElementById('telefone-responsavel').value.trim();
+      console.log('🚀 Submit capturado!');
+      
+      const nomeInput = document.getElementById('nome-responsavel');
+      const idadeInput = document.getElementById('idade-responsavel');
+      const telefoneInput = document.getElementById('telefone-responsavel');
+      
+      console.log('🔍 Inputs encontrados:', {
+        nomeInput,
+        idadeInput,
+        telefoneInput
+      });
+      
+      console.log('🔍 Valores RAW dos inputs:', {
+        nomeValue: nomeInput.value,
+        idadeValue: idadeInput.value,
+        telefoneValue: telefoneInput.value
+      });
+      
+      const nomeResponsavel = nomeInput.value.trim();
+      const idadeResponsavel = parseInt(idadeInput.value);
+      const telefone = telefoneInput.value.trim();
+      
+      // Debug
+      console.log('📝 Dados do formulário:', {
+        nome: nomeResponsavel,
+        idade: idadeResponsavel,
+        telefone: telefone
+      });
       
       // Validação básica
-      if (!nomeResponsavel || !idadeResponsavel || !telefone) {
-        showError('Campos Obrigatórios', 'Por favor, preencha todos os campos obrigatórios (nome, idade e telefone).');
+      if (!nomeResponsavel) {
+        showError('Nome Obrigatório', 'Por favor, preencha seu nome completo.');
+        return;
+      }
+      
+      if (!idadeResponsavel || isNaN(idadeResponsavel)) {
+        showError('Idade Obrigatória', 'Por favor, preencha sua idade.');
+        return;
+      }
+      
+      if (!telefone) {
+        showError('Telefone Obrigatório', 'Por favor, preencha seu telefone.');
         return;
       }
       
@@ -241,8 +289,7 @@
           .insert({
             nome: dados.nome,
             telefone: dados.telefone,
-            idade: dados.idade, // Idade do responsável
-            cpf: null,
+            idade: dados.idade,
             email: null
           })
           .select()
@@ -282,6 +329,8 @@
         return { error };
       }
     }
+    
+    }); // Fim do DOMContentLoaded
   </script>
 </body>
 </html>

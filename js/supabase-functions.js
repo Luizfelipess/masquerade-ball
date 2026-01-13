@@ -23,11 +23,8 @@ function isValidCPF(cpf){
 
 async function salvarRSVP(dados) {
   try {
-    // Validar CPF
-    const cpf = sanitizeCPF(dados.cpf);
-    if (!isValidCPF(cpf)) {
-      throw new Error('CPF inválido!');
-    }
+    // CPF é opcional - sanitizar apenas se fornecido
+    const cpf = dados.cpf ? sanitizeCPF(dados.cpf) : null;
 
     // 1. Inserir titular
     const { data: rsvp, error: rsvpError } = await supabase
@@ -98,11 +95,8 @@ async function verificarVotacaoLiberada() {
 
 async function enviarLook(nome, cpf, descricao, file) {
   try {
-    // 1. Validar CPF
-    const cpfLimpo = sanitizeCPF(cpf);
-    if (!isValidCPF(cpfLimpo)) {
-      throw new Error('CPF inválido!');
-    }
+    // 1. CPF é opcional - sanitizar apenas se fornecido
+    const cpfLimpo = cpf ? sanitizeCPF(cpf) : null;
 
     // 2. Verificar se votação está liberada
     const liberada = await verificarVotacaoLiberada();
@@ -182,14 +176,11 @@ async function carregarGaleria() {
 
 async function votarEmLook(lookId, lookCPF, cpfVotante) {
   try {
-    // Validar CPF
-    const cpfLimpo = sanitizeCPF(cpfVotante);
-    if (!isValidCPF(cpfLimpo)) {
-      throw new Error('CPF inválido!');
-    }
+    // CPF é opcional - sanitizar apenas se fornecido
+    const cpfLimpo = cpfVotante ? sanitizeCPF(cpfVotante) : null;
 
-    // Não pode votar em si mesmo
-    if (lookCPF === cpfLimpo) {
+    // Não pode votar em si mesmo (se ambos tiverem CPF)
+    if (lookCPF && cpfLimpo && lookCPF === cpfLimpo) {
       throw new Error('Você não pode votar no seu próprio look!');
     }
 

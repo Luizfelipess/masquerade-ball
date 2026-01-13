@@ -138,14 +138,14 @@
       const data = new FormData(form);
       const nome = (data.get('nome')||'').trim();
       const cpfRaw = data.get('cpf')||'';
-      const cpf = sanitizeCPF(cpfRaw);
+      const cpf = cpfRaw ? sanitizeCPF(cpfRaw) : null; // CPF é opcional
       const email = (data.get('email')||'').trim();
       const telefone = (data.get('telefone')||'').trim();
       if(!nome){ alert('Por favor, informe o nome.'); return }
-      if(!isValidCPF(cpf)) { alert('CPF inválido.'); return }
+      // CPF agora é opcional - removida validação
       const list = JSON.parse(localStorage.getItem('rsvps')||'[]');
-      // prevent duplicate cpf
-      if(list.find(r=>r.cpf === cpf)){
+      // prevent duplicate cpf (só se tiver CPF)
+      if(cpf && list.find(r=>r.cpf === cpf)){
         const msg = qs('#rsvp-msg'); if(msg) msg.textContent='Já recebemos confirmação deste CPF.'; return;
       }
       list.push({nome,cpf,email,telefone,when:new Date().toISOString()});
@@ -173,15 +173,16 @@
       e.preventDefault();
       const data = new FormData(form);
       const nome = (data.get('nome')||'').trim();
-      const cpfRaw = data.get('cpf')||''; const cpf = sanitizeCPF(cpfRaw);
+      const cpfRaw = data.get('cpf')||''; 
+      const cpf = cpfRaw ? sanitizeCPF(cpfRaw) : null; // CPF é opcional
       if(!nome){ alert('Informe o nome.'); return }
-      if(!isValidCPF(cpf)){ alert('CPF inválido.'); return }
+      // CPF agora é opcional - removida validação
 
       // check if voting is open
       const now = new Date(); if(now < EVENT_DATE){ alert('A votação só será aberta na noite do evento.'); return }
 
       const votes = JSON.parse(localStorage.getItem('votes')||'[]');
-      if(votes.find(v=>v.cpf===cpf)) { alert('Já recebemos um voto deste CPF.'); return }
+      if(cpf && votes.find(v=>v.cpf===cpf)) { alert('Já recebemos um voto deste CPF.'); return }
 
       // store basic vote info; images are not persisted (mock)
       votes.push({nome,cpf,description:(data.get('descricao')||'').trim(),when:new Date().toISOString()});
