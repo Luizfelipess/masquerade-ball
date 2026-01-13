@@ -102,12 +102,21 @@
 
   <script src="/js/masks-validation.js"></script>
   <script src="/js/modals.js"></script>
-  <script src="/js/main.js" defer></script>
   <script src="/js/supabase-config.js"></script>
   <script src="/js/supabase-functions.js"></script>
   <script src="/js/menu-votacao.js"></script>
+  <script src="/js/main.js" defer></script>
   <script>
-    // Variáveis globais
+    // Aguardar o carregamento completo do Supabase
+    window.addEventListener('DOMContentLoaded', () => {
+      // Verificar se o Supabase foi inicializado
+      if (!window.supabase) {
+        console.error('❌ Supabase não foi inicializado!');
+        showError('Erro de Configuração', 'O sistema de confirmação não está disponível. Entre em contato com os organizadores.');
+        return;
+      }
+
+      // Variáveis globais
     let dependentes = [];
     let dependenteCounter = 0;
 
@@ -282,6 +291,8 @@
         return { error };
       }
     }
+    
+    }); // Fim do DOMContentLoaded
   </script>
 </body>
 </html>
