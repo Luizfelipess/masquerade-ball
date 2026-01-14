@@ -259,7 +259,7 @@
       // Renderizar looks em galeria (similar à página de votação)
       looksList.innerHTML = looks.map(look => `
         <div class="gallery-item" data-look-id="${look.id}">
-          <img src="${look.foto_url}" alt="Look de ${look.nome}" loading="lazy">
+          <img src="${look.foto_url}" alt="Look de ${look.nome}" loading="lazy" class="look-thumbnail" data-foto="${look.foto_url}" data-nome="${look.nome}" style="cursor:pointer">
           <div class="gallery-info">
             <h4>${look.nome}</h4>
             ${look.descricao ? `<p style="color:var(--muted);font-size:0.9rem">${look.descricao}</p>` : ''}
@@ -278,6 +278,16 @@
           </div>
         </div>
       `).join('');
+      
+      // Adicionar event listeners nas imagens
+      const thumbnails = looksList.querySelectorAll('.look-thumbnail');
+      thumbnails.forEach(img => {
+        img.addEventListener('click', () => {
+          const fotoUrl = img.dataset.foto;
+          const nome = img.dataset.nome;
+          abrirModalFoto(fotoUrl, nome);
+        });
+      });
       
       // Adicionar event listeners nos botões de ver votantes
       const botoesVerVotantes = looksList.querySelectorAll('.btn-ver-votantes');
@@ -393,6 +403,22 @@
       console.error('❌ Erro ao carregar resultados:', error);
       looksRanking.innerHTML = '<p style="text-align:center;color:#f44336;padding:40px 0">Erro ao carregar resultados da votação.</p>';
     }
+  }
+
+  /* ========== MODAL FOTO ========== */
+
+  function abrirModalFoto(fotoUrl, nome) {
+    const modalHTML = `
+      <div class="modal-overlay active" id="modal-foto-look" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out" onclick="this.remove()">
+        <div style="max-width:90vw;max-height:90vh;position:relative" onclick="event.stopPropagation()">
+          <button onclick="document.getElementById('modal-foto-look').remove()" style="position:absolute;top:-40px;right:0;background:rgba(232,197,116,0.2);color:var(--gold);border:1px solid var(--gold);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:600">✕ Fechar</button>
+          <img src="${fotoUrl}" alt="Look de ${nome}" style="max-width:100%;max-height:90vh;border-radius:12px;border:2px solid var(--gold);box-shadow:0 10px 40px rgba(0,0,0,0.5)">
+          <p style="text-align:center;color:var(--gold);margin-top:16px;font-size:1.2rem;font-weight:600">${nome}</p>
+        </div>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
   }
 
   /* ========== MOSTRAR VOTANTES ========== */
@@ -524,7 +550,8 @@
       );
       
       // Recarregar dados
-      await carregarDados();
+      await carregarDashboard();
+      await carregarLooksEnviados(); // Atualizar aba de looks
       
     } catch (error) {
       hideLoading();
