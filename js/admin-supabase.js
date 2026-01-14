@@ -762,7 +762,15 @@
           <!-- Dependentes -->
           ${dependentes.length > 0 ? `
             <div style="margin-bottom:24px">
-              <h4 style="color:var(--gold);margin:0 0 16px;font-size:1.1rem">👥 Acompanhantes (${dependentes.length})</h4>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <h4 style="color:var(--gold);margin:0;font-size:1.1rem">👥 Acompanhantes (${dependentes.length})</h4>
+                <button 
+                  class="btn-add-dependente"
+                  style="background:var(--gold);color:#000;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.85rem;font-weight:600"
+                >
+                  ➕ Adicionar
+                </button>
+              </div>
               <div style="display:flex;flex-direction:column;gap:12px" id="lista-dependentes-modal">
                 ${dependentes.map(dep => `
                   <div class="dependente-item-modal" data-dep-id="${dep.id}" style="background:rgba(255,255,255,0.02);border:1px solid rgba(232,197,116,0.1);border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center">
@@ -785,9 +793,20 @@
               </div>
             </div>
           ` : `
-            <p style="text-align:center;color:var(--muted);padding:20px;font-style:italic">
-              Nenhum acompanhante
-            </p>
+            <div style="margin-bottom:24px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <h4 style="color:var(--gold);margin:0;font-size:1.1rem">👥 Acompanhantes</h4>
+                <button 
+                  class="btn-add-dependente"
+                  style="background:var(--gold);color:#000;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.85rem;font-weight:600"
+                >
+                  ➕ Adicionar
+                </button>
+              </div>
+              <p style="text-align:center;color:var(--muted);padding:20px;font-style:italic">
+                Nenhum acompanhante ainda
+              </p>
+            </div>
           `}
 
           <!-- Resumo -->
@@ -853,6 +872,12 @@
         }
       });
     });
+
+    // Adicionar acompanhante
+    modal.querySelector('.btn-add-dependente')?.addEventListener('click', () => {
+      modal.remove();
+      abrirModalAdicionarAcompanhante(rsvp);
+    });
   }
 
   /* ========== EXCLUIR DEPENDENTE ========== */
@@ -887,6 +912,138 @@
       console.error('Erro ao excluir dependente:', error);
       showError('Erro ao Excluir', `Não foi possível excluir o acompanhante: ${error.message}`);
     }
+  }
+
+  /* ========== ADICIONAR ACOMPANHANTE ========== */
+
+  function abrirModalAdicionarAcompanhante(rsvp) {
+    const modalHTML = `
+      <div class="modal-overlay active" id="modal-adicionar-acompanhante" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px">
+        <div class="modal-content" style="background:#1a1a1a;border:2px solid var(--gold);border-radius:16px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;padding:32px">
+          
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:24px">
+            <h3 style="color:var(--gold);margin:0;font-family:'Playfair Display',serif;font-size:1.5rem">
+              ➕ Adicionar Acompanhante
+            </h3>
+            <button class="btn-close-modal" style="background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;padding:0;line-height:1">×</button>
+          </div>
+
+          <div style="background:rgba(232,197,116,0.05);border:1px solid rgba(232,197,116,0.2);border-radius:8px;padding:16px;margin-bottom:24px">
+            <p style="color:var(--accent-soft);margin:0;font-size:0.9rem">
+              <strong style="color:var(--gold)">Confirmação de:</strong> ${rsvp.nome}
+            </p>
+          </div>
+
+          <form id="form-adicionar-acompanhante" style="display:flex;flex-direction:column;gap:16px">
+            <div>
+              <label style="color:var(--accent-soft);font-weight:600;display:block;margin-bottom:8px">Nome do Acompanhante *</label>
+              <input type="text" id="dep-nome" required style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(232,197,116,0.3);border-radius:8px;color:var(--accent-soft);font-size:1rem">
+            </div>
+
+            <div>
+              <label style="color:var(--accent-soft);font-weight:600;display:block;margin-bottom:8px">Tipo *</label>
+              <select id="dep-tipo" required style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(232,197,116,0.3);border-radius:8px;color:var(--accent-soft);font-size:1rem;cursor:pointer">
+                <option value="" style="background:#1a1a1a;color:var(--muted)">Selecione...</option>
+                <option value="adulto" style="background:#1a1a1a;color:var(--accent-soft)">👤 Adulto (18+ anos)</option>
+                <option value="crianca" style="background:#1a1a1a;color:var(--accent-soft)">👶 Criança (0-17 anos)</option>
+              </select>
+            </div>
+
+            <div id="idade-field" style="display:none">
+              <label style="color:var(--accent-soft);font-weight:600;display:block;margin-bottom:8px">Idade da Criança *</label>
+              <input type="number" id="dep-idade" min="0" max="17" placeholder="Ex: 5" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(232,197,116,0.3);border-radius:8px;color:var(--accent-soft);font-size:1rem">
+            </div>
+
+            <div style="display:flex;gap:12px;margin-top:16px">
+              <button type="button" class="btn-close-modal" style="flex:1;background:rgba(255,255,255,0.1);color:var(--accent-soft);border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600">
+                Cancelar
+              </button>
+              <button type="submit" style="flex:1;background:var(--gold);color:#000;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.3s">
+                ✓ Adicionar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    const modal = document.getElementById('modal-adicionar-acompanhante');
+    const form = document.getElementById('form-adicionar-acompanhante');
+    const tipoSelect = document.getElementById('dep-tipo');
+    const idadeField = document.getElementById('idade-field');
+    const idadeInput = document.getElementById('dep-idade');
+
+    // Mostrar campo idade apenas para crianças
+    tipoSelect.addEventListener('change', () => {
+      if (tipoSelect.value === 'crianca') {
+        idadeField.style.display = 'block';
+        idadeInput.required = true;
+      } else {
+        idadeField.style.display = 'none';
+        idadeInput.required = false;
+        idadeInput.value = '';
+      }
+    });
+
+    // Fechar modal
+    modal.querySelectorAll('.btn-close-modal').forEach(btn => {
+      btn.addEventListener('click', () => modal.remove());
+    });
+
+    // Clicar fora fecha
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+
+    // Submit do form
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const nome = document.getElementById('dep-nome').value.trim();
+      const tipo = document.getElementById('dep-tipo').value;
+      const idade = tipo === 'crianca' ? parseInt(document.getElementById('dep-idade').value) : null;
+
+      if (!nome || !tipo) {
+        showError('Campos Obrigatórios', 'Preencha todos os campos obrigatórios.');
+        return;
+      }
+
+      if (tipo === 'crianca' && !idade) {
+        showError('Idade Obrigatória', 'Para crianças, informe a idade.');
+        return;
+      }
+
+      try {
+        showLoading('Adicionando acompanhante...');
+        modal.remove();
+
+        const { data, error } = await supabase
+          .from('dependentes')
+          .insert({
+            rsvp_id: rsvp.id,
+            nome,
+            tipo,
+            idade
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        hideLoading();
+        showSuccess('Acompanhante Adicionado! ✅', `${nome} foi adicionado(a) como acompanhante de ${rsvp.nome}!`);
+        
+        // Recarregar dashboard
+        await carregarDashboard();
+
+      } catch (error) {
+        hideLoading();
+        console.error('Erro ao adicionar acompanhante:', error);
+        showError('Erro ao Adicionar', `Não foi possível adicionar o acompanhante: ${error.message}`);
+      }
+    });
   }
 
   /* ========== EXCLUIR CONFIRMAÇÃO ========== */
