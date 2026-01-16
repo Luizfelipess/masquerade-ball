@@ -4,8 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Prêmio — Baile de Máscaras</title>
+  
+  <!-- Apply theme immediately to prevent flash -->
+  <script>
+    (function(){
+      const stored = localStorage.getItem('site-theme');
+      const initial = stored || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      if(initial === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    })();
+  </script>
+  
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
 </head>
@@ -15,6 +25,10 @@
       <h1>Baile de Máscaras</h1>
       <p class="lead">Comemoração aos 30 Anos de <span class="celebrant-name">Thamires Feres</span></p>
     </div>
+    <button class="theme-toggle" aria-pressed="false" aria-label="Alternar tema" title="Alternar tema">
+      <span class="icon">☾</span>
+      <span class="label">Tema</span>
+    </button>
     <button class="hamburger" aria-label="Menu" aria-expanded="false">
       <span></span>
       <span></span>

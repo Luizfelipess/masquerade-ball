@@ -1,6 +1,18 @@
 // Script principal: pequenas funcionalidades para RSVP e habilitar votação na noite do evento
 (function(){
   'use strict';
+  
+  /* ---------- Apply theme IMMEDIATELY (before DOMContentLoaded) ---------- */
+  (function applyStoredThemeImmediately(){
+    const stored = localStorage.getItem('site-theme');
+    const initial = stored || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    if(initial === 'light'){
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  })();
+  
   const EVENT_DATE = new Date('2026-02-21T20:00:00');
 
   /* ---------- Helpers ---------- */
@@ -55,6 +67,49 @@
         header.classList.remove('scrolled');
       }
     });
+  }
+
+  /* ---------- Theme (dark / light) ---------- */
+  function svgFor(theme){
+    if(theme === 'light') return '<svg class="theme-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5" fill="#f6d365"/><g stroke="#f6d365" stroke-width="1.2" stroke-linecap="round"><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/></g></svg>';
+    return '<svg class="theme-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" fill="#f0e1b8" stroke="#d4af37" stroke-width="0.6"/></svg>';
+  }
+
+  function applyTheme(theme){
+    const html = document.documentElement;
+    // store explicit theme value: for light set attribute, for dark remove it to use default dark vars
+    if(theme === 'light') html.setAttribute('data-theme','light');
+    else html.removeAttribute('data-theme');
+    // update all theme buttons (aria-pressed + icon)
+    qsa('.theme-toggle').forEach(btn => {
+      try{
+        btn.setAttribute('aria-pressed', theme === 'light');
+        const icon = btn.querySelector('.icon'); if(icon) icon.innerHTML = svgFor(theme);
+      }catch(e){ console.debug('theme btn update error', e) }
+    });
+  }
+
+  function initThemeToggle(){
+    const btns = qsa('.theme-toggle');
+    
+    // Attach delegated listener to document for theme toggle clicks
+    document.addEventListener('click', (e)=>{
+      const t = e.target.closest && e.target.closest('.theme-toggle');
+      if(t){
+        const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+        const next = current === 'light' ? 'dark' : 'light';
+        applyTheme(next);
+        localStorage.setItem('site-theme', next);
+        console.debug('Theme toggled to', next);
+      }
+    });
+    
+    // Get initial theme from localStorage or system preference
+    const stored = localStorage.getItem('site-theme');
+    const initial = stored || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    
+    applyTheme(initial);
+    console.debug('Theme initialized:', initial, 'toggles found:', btns.length);
   }
 
   /* ---------- Hamburger Menu (Mobile) ---------- */
@@ -240,6 +295,7 @@
     startCountdown();
     initHeaderScroll();
     initHamburgerMenu();
+  initThemeToggle();
     updateVotingAvailability();
     handleRsvpForm();
     handleVotingForm();

@@ -1,7 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 60" preserveAspectRatio="xMidYMid meet">
-  <g fill="none" stroke="#d6b56a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M10 30 C40 10, 80 10, 110 30" opacity="0.95"/>
-    <path d="M110 30 C140 50, 180 50, 210 30" opacity="0.95"/>
-    <circle cx="110" cy="30" r="6" fill="#d6b56a" stroke="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 80" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop offset="0%" stop-color="#d4af37" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#f4d58d" stop-opacity="0.95" />
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="url(#g)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 40 C64 6, 130 6, 180 40 C230 74, 300 74, 360 40 C410 14, 470 14, 488 40" opacity="0.98"/>
+    <path d="M60 40 C90 28, 120 28, 150 40" opacity="0.85"/>
+    <path d="M350 40 C380 52, 410 52, 440 40" opacity="0.85"/>
+    <circle cx="250" cy="40" r="8" fill="url(#g)" stroke="none"/>
+    <path d="M232 26 C242 18, 258 18, 268 26" stroke-width="1.6"/>
   </g>
 </svg>
