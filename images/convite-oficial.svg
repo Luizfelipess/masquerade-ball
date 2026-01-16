@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 768 1024" style="background:#f5e6d3">
+  <defs>
+    <style>
+      .title { font-family: 'Playfair Display', serif; fill: #8b6914; }
+      .text { font-family: Arial, sans-serif; fill: #4a3520; font-size: 16px; }
+      .ornament { fill: #c4a05e; opacity: 0.3; }
+    </style>
+  </defs>
+  
+  <!-- Ornamento topo -->
+  <rect class="ornament" x="150" y="20" width="468" height="3" rx="1.5"/>
+  <text x="384" y="90" text-anchor="middle" class="title" font-size="28" font-style="italic">Crônicas da Alta Sociedade</text>
+  
+  <!-- Brasão -->
+  <rect x="334" y="120" width="100" height="120" rx="8" fill="none" stroke="#c4a05e" stroke-width="3"/>
+  <text x="384" y="190" text-anchor="middle" font-family="cursive" font-size="48" fill="#8b6914">TF</text>
+  <text x="300" y="200" text-anchor="middle" font-size="40">🦚</text>
+  <text x="468" y="200" text-anchor="middle" font-size="40">🦚</text>
+  
+  <!-- Título -->
+  <text x="384" y="280" text-anchor="middle" class="title" font-size="36" font-style="italic">O Baile de Máscaras</text>
+  <text x="384" y="315" text-anchor="middle" class="text" font-size="14">Em Celebração aos 30 Anos de Thamires Feres</text>
+  
+  <!-- Casal -->
+  <text x="384" y="400" text-anchor="middle" font-size="60">💃🕺</text>
+  
+  <!-- Detalhes -->
+  <rect x="100" y="460" width="568" height="200" rx="12" fill="#fff" fill-opacity="0.3" stroke="#c4a05e" stroke-width="2"/>
+  <text x="384" y="495" text-anchor="middle" class="title" font-size="20">Os Detalhes da Noite</text>
+  <text x="150" y="535" class="text">📅 Data: 21 de febrero de 2026</text>
+  <text x="150" y="565" class="text">🕰 Horário: A partir das 20h</text>
+  <text x="150" y="595" class="text">📍 Local: Casa Festa</text>
+  <text x="180" y="620" class="text" font-size="13">Avenida Olegário Maciel, 201, Santa Helena</text>
+  
+  <!-- Rodapé -->
+  <text x="384" y="720" text-anchor="middle" class="text" font-style="italic" font-size="14">
+    "Que vossas máscaras sejam primorosas e vossos trajes impecáveis..."
+  </text>
+  <text x="384" y="780" text-anchor="middle" font-family="cursive" font-size="18" fill="#8b6914">
+    Contamos com vossa presença ilustre.
+  </text>
+  
+  <text x="384" y="920" text-anchor="middle" class="text" font-style="italic">
+    Seria um escândalo se não comparecesse.
+  </text>
+  
+  <!-- Ornamento baixo -->
+  <rect class="ornament" x="150" y="1000" width="468" height="3" rx="1.5"/>
+</svg>
