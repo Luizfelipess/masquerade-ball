@@ -206,31 +206,42 @@
     <p>Feito com esmero para uma noite inesquecível — Inspirado por Bridgerton.</p>
   </footer>
 
+  <!-- Toast de notificação -->
+  <div id="toast-notification" style="position:fixed;bottom:-100px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);color:#1a0f08;padding:16px 32px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.3);z-index:10000;transition:bottom 0.4s ease;font-family:'Playfair Display',serif;font-weight:600;font-size:1rem;display:flex;align-items:center;gap:10px;min-width:280px;justify-content:center;">
+    <span id="toast-icon">✅</span>
+    <span id="toast-message">Endereço copiado!</span>
+  </div>
+
   <script>
+    // Função para mostrar toast
+    function mostrarToast(mensagem, icone = '✅', duracao = 3000) {
+      const toast = document.getElementById('toast-notification');
+      const toastMessage = document.getElementById('toast-message');
+      const toastIcon = document.getElementById('toast-icon');
+      
+      toastMessage.textContent = mensagem;
+      toastIcon.textContent = icone;
+      
+      toast.style.bottom = '30px';
+      
+      setTimeout(() => {
+        toast.style.bottom = '-100px';
+      }, duracao);
+    }
+    
     // Função para copiar endereço
     function copiarEndereco() {
-      const endereco = 'Avenida Olegário Maciel, 201, Santa Helena';
+      const endereco = 'Casa Festa\nAvenida Olegário Maciel, 201, Santa Helena';
       
       // Tentar usar a API moderna do Clipboard
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(endereco)
           .then(() => {
-            // Feedback visual
-            const btn = event.target.closest('button');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '✅ Copiado!';
-            btn.style.background = 'rgba(76, 175, 80, 0.2)';
-            btn.style.borderColor = 'rgba(76, 175, 80, 0.4)';
-            
-            setTimeout(() => {
-              btn.innerHTML = originalText;
-              btn.style.background = '';
-              btn.style.borderColor = '';
-            }, 2000);
+            mostrarToast('Endereço copiado!', '📍');
           })
           .catch(err => {
             console.error('Erro ao copiar:', err);
-            alert('Endereço: ' + endereco);
+            mostrarToast('Não foi possível copiar', '❌', 2000);
           });
       } else {
         // Fallback para navegadores antigos
@@ -243,17 +254,9 @@
         
         try {
           document.execCommand('copy');
-          const btn = event.target.closest('button');
-          const originalText = btn.innerHTML;
-          btn.innerHTML = '✅ Copiado!';
-          btn.style.background = 'rgba(76, 175, 80, 0.2)';
-          
-          setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.style.background = '';
-          }, 2000);
+          mostrarToast('Endereço copiado!', '📍');
         } catch (err) {
-          alert('Endereço: ' + endereco);
+          mostrarToast('Não foi possível copiar', '❌', 2000);
         }
         
         document.body.removeChild(textarea);
@@ -311,20 +314,26 @@
           text: texto,
           url: url
         })
-        .then(() => console.log('Compartilhado com sucesso!'))
-        .catch((err) => console.log('Erro ao compartilhar:', err));
+        .then(() => {
+          mostrarToast('Compartilhado!', '📤');
+        })
+        .catch((err) => {
+          if (err.name !== 'AbortError') {
+            console.log('Erro ao compartilhar:', err);
+          }
+        });
       } else {
         // Fallback: copiar link
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(url)
             .then(() => {
-              alert('✅ Link copiado!\n\n' + texto + '\n\nCole e compartilhe: ' + url);
+              mostrarToast('Link copiado para compartilhar!', '🔗', 3500);
             })
             .catch(() => {
-              alert('Link do convite:\n' + url);
+              mostrarToast('Não foi possível copiar', '❌', 2000);
             });
         } else {
-          alert('Link do convite:\n' + url);
+          mostrarToast('Link: ' + url, '🔗', 4000);
         }
       }
     }
