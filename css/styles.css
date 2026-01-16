@@ -47,55 +47,11 @@ html[data-theme='light']{
   --accent-dark:#1a1108;
 }
 
-/* Force Bridgerton-like paper theme for the invite page specifically */
-body.invitation-page{
-  --bg-deep: #fbf8f3; /* very light paper */
-  --bg-dark: #f3eae0;
-  --gold: #c99d36;
-  --gold-light: #f7e7aa;
-  --gold-dim: #b58b31;
-  --accent: #2e2318;
-  --accent-soft: #4b3b2e;
-  --muted: #8a755a;
-  background: linear-gradient(180deg, #fbf8f3 0%, #f6f0e8 100%);
-  color:var(--accent);
-}
-
-body.invitation-page .site-header{
-  background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(253,250,245,0.9));
-  border-bottom-color:rgba(196,160,94,0.12);
-  color:var(--accent);
-}
-
-body.invitation-page .site-header .brand h1{ color:var(--gold-dim); text-shadow:none }
-body.invitation-page .site-header .lead{ color:var(--muted) }
-
-body.invitation-page .site-footer{
-  background:linear-gradient(180deg, rgba(255,255,255,0.96), rgba(253,250,245,0.98));
-  color:var(--muted);
-  border-top-color:rgba(196,160,94,0.08);
-}
-
-/* Make nav links more paper-ish on invite page */
-body.invitation-page .main-nav a{
-  color:var(--accent-soft);
-}
-body.invitation-page .main-nav a.active{ color:var(--gold) }
-
-/* Ensure invitation card contrasts nicely */
+/* Invitation page specific styles - respects dark/light theme */
 body.invitation-page .invitation-card{
-  background: linear-gradient(180deg, var(--ivory) 0%, var(--paper-cream) 100%);
-  border-color: var(--gold-dim);
-}
-
-body.invitation-page .invitation-body, body.invitation-page .celebrant-name{
-  color:var(--accent);
-}
-
-/* Adjust buttons for paper look */
-body.invitation-page .btn.primary{
-  background:linear-gradient(135deg,var(--gold) 0%, var(--gold-light) 100%);
-  color:#1a0f08;
+  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-dark) 100%);
+  border: 2px solid var(--gold-dim);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
 }
 
 
