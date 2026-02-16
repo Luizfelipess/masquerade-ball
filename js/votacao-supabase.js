@@ -162,10 +162,10 @@ async function carregarGaleria(resetar = false) {
     // Renderizar próxima página de looks
     renderizarProximaPagina();
     
-  } catch (error) {
-    console.error('Erro ao carregar galeria:', error);
-    showError('Erro', 'Não foi possível carregar a galeria de looks.', error);
-  }
+} catch (error) {
+  console.error('Erro ao carregar galeria:', error);
+  showError('Erro', 'Não foi possível carregar a galeria de looks.\n\n' + (error?.message || ''));
+}
 }
 
 function renderizarProximaPagina() {
