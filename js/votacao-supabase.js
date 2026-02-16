@@ -164,7 +164,16 @@ async function carregarGaleria(resetar = false) {
     
 } catch (error) {
   console.error('Erro ao carregar galeria:', error);
-  showError('Erro', 'Não foi possível carregar a galeria de looks.\n\n' + (error?.message || ''));
+    const galeriaDiv = document.getElementById('galeria-looks');
+    if (galeriaDiv) {
+      galeriaDiv.innerHTML = `
+        <p style="color:red; white-space:pre-wrap; font-size:12px">
+          ERRO CELULAR:<br>
+          ${error?.message || JSON.stringify(error)}
+        </p>
+      `;
+    }
+    showError('Erro', 'Não foi possível carregar a galeria de looks.\n\n' + (error?.message || ''));
 }
 }
 
