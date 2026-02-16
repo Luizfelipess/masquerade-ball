@@ -18,25 +18,23 @@ let looksCarregados = [];
 let indiceAtual = 0;
 const LOOKS_POR_PAGINA = 20;
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
   console.log('Sistema de votação inicializado');
-  
-  // Verificar se votação está liberada
-  const liberada = await verificarVotacaoLiberada();
-  
-  // Carregar galeria de looks
-  await carregarGaleria();
-  
-  // Setup do formulário de envio
-  setupFormularioEnvio();
-  
-  // Setup preview de foto
-  setupFotoPreview();
-  
-  // Se votação liberada, iniciar auto-refresh a cada 30 segundos
-  if (liberada) {
-    iniciarAutoRefresh();
-  }
+  // Pequeno delay para garantir carregamento do Supabase no Chrome mobile
+  setTimeout(async () => {
+    // Verificar se votação está liberada
+    const liberada = await verificarVotacaoLiberada();
+    // Carregar galeria de looks
+    await carregarGaleria();
+    // Setup do formulário de envio
+    setupFormularioEnvio();
+    // Setup preview de foto
+    setupFotoPreview();
+    // Se votação liberada, iniciar auto-refresh a cada 30 segundos
+    if (liberada) {
+      iniciarAutoRefresh();
+    }
+  }, 300);
 });
 
 // ========================================
