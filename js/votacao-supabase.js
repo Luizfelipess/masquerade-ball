@@ -18,23 +18,25 @@ let looksCarregados = [];
 let indiceAtual = 0;
 const LOOKS_POR_PAGINA = 20;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log('Sistema de votação inicializado');
-  // Pequeno delay para garantir carregamento do Supabase no Chrome mobile
-  setTimeout(async () => {
-    // Verificar se votação está liberada
-    const liberada = await verificarVotacaoLiberada();
-    // Carregar galeria de looks
-    await carregarGaleria();
-    // Setup do formulário de envio
-    setupFormularioEnvio();
-    // Setup preview de foto
-    setupFotoPreview();
-    // Se votação liberada, iniciar auto-refresh a cada 30 segundos
-    if (liberada) {
-      iniciarAutoRefresh();
-    }
-  }, 300);
+  
+  // Verificar se votação está liberada
+  const liberada = await verificarVotacaoLiberada();
+  
+  // Carregar galeria de looks
+  await carregarGaleria();
+  
+  // Setup do formulário de envio
+  setupFormularioEnvio();
+  
+  // Setup preview de foto
+  setupFotoPreview();
+  
+  // Se votação liberada, iniciar auto-refresh a cada 30 segundos
+  if (liberada) {
+    iniciarAutoRefresh();
+  }
 });
 
 // ========================================
@@ -162,19 +164,10 @@ async function carregarGaleria(resetar = false) {
     // Renderizar próxima página de looks
     renderizarProximaPagina();
     
-} catch (error) {
-  console.error('Erro ao carregar galeria:', error);
-    const galeriaDiv = document.getElementById('galeria-looks');
-    if (galeriaDiv) {
-      galeriaDiv.innerHTML = `
-        <p style="color:red; white-space:pre-wrap; font-size:12px">
-          ERRO CELULAR:<br>
-          ${error?.message || JSON.stringify(error)}
-        </p>
-      `;
-    }
-    showError('Erro', 'Não foi possível carregar a galeria de lookss.\n\n' + (error?.message || ''));
-}
+  } catch (error) {
+    console.error('Erro ao carregar galeria:', error);
+    showError('Erro', 'Não foi possível carregar a galeria de looks.');
+  }
 }
 
 function renderizarProximaPagina() {
@@ -194,7 +187,6 @@ function renderizarProximaPagina() {
           <h4>${look.nome}</h4>
           ${look.descricao ? `<p>${look.descricao}</p>` : ''}
           <div class="vote-section">
-            <span class="vote-count">❤️ ${look.votos} votos</span>
             <button class="btn-vote" data-look-id="${look.id}" data-look-nome="${look.nome.replace(/"/g, '&quot;')}">
               Votar Neste Look
             </button>
@@ -320,8 +312,16 @@ function setupFormularioEnvio() {
       return;
     }
     
-    // CPF é opcional - apenas sanitizar se fornecido
-    const cpfLimpo = cpf ? cpf : null;
+    if (cpf.length !== 11) {
+      showError('CPF Inválido', 'Por favor, digite um CPF válido com 11 dígitos.');
+      return;
+    }
+    
+    // 🛡️ PROTEÇÃO 2: Validar CPF com dígitos verificadores (anti-fraude)
+    if (!window.AntiFraude.validarCPF(cpf)) {
+      showError('CPF Inválido', 'O CPF digitado não é válido. Verifique os números.');
+      return;
+    }
     
     if (!foto) {
       showError('Foto Necessária', 'Por favor, escolha uma foto do seu traje.');
@@ -334,36 +334,34 @@ function setupFormularioEnvio() {
       return;
     }
     
-    // 🛡️ PROTEÇÃO: Verificar se já enviou look NO BANCO DE DADOS (apenas se tiver CPF)
-    if (cpfLimpo) {
-      try {
-        showLoading('Verificando se você já enviou um look...');
-        
-        const { data: lookExistente, error: checkError } = await supabase
-          .from('looks')
-          .select('id')
-          .eq('cpf', cpfLimpo)
-          .single();
-        
+    // 🛡️ PROTEÇÃO 4: Verificar se já enviou look NO BANCO DE DADOS (única fonte de verdade)
+    try {
+      showLoading('Verificando se você já enviou um look...');
+      
+      const { data: lookExistente, error: checkError } = await supabase
+        .from('looks')
+        .select('id')
+        .eq('cpf', cpf)
+        .single();
+      
+      hideLoading();
+      
+      if (lookExistente) {
+        showError('Look Já Enviado', 'Este CPF já enviou um look. Cada pessoa pode enviar apenas uma foto.');
+        return;
+      }
+    } catch (error) {
+      // Se não encontrou (error.code === 'PGRST116'), está OK
+      if (error.code !== 'PGRST116') {
         hideLoading();
-        
-        if (lookExistente) {
-          showError('Look Já Enviado', 'Este CPF já enviou um look. Cada pessoa pode enviar apenas uma foto.');
-          return;
-        }
-      } catch (error) {
-        // Se não encontrou (error.code === 'PGRST116'), está OK
-        if (error.code !== 'PGRST116') {
-          hideLoading();
-          console.error('Erro ao verificar look:', error);
-          showError('Erro', 'Erro ao verificar envio anterior.');
-          return;
-        }
+        console.error('Erro ao verificar look:', error);
+        showError('Erro', 'Erro ao verificar envio anterior.');
+        return;
       }
     }
     
     // Fazer upload da foto
-    await enviarLook(nome, cpfLimpo, descricao, foto);
+    await enviarLook(nome, cpf, descricao, foto);
   });
 }
 
@@ -539,32 +537,40 @@ async function votarLook(lookId, nomeLook) {
         return;
       }
       
-      // CPF é opcional - apenas sanitizar se fornecido
-      const cpfLimpo = cpfVotante ? cpfVotante.replace(/\D/g, '') : null;
+      const cpfLimpo = cpfVotante.replace(/\D/g, '');
       
-      // 🛡️ PROTEÇÃO: Verificar se já votou NO BANCO DE DADOS (apenas se tiver CPF)
-      if (cpfLimpo) {
-        try {
-          showLoading('Verificando voto...');
-          
-          const { data: votosExistentes, error: checkError } = await supabase
-            .from('votos')
-            .select('id')
-            .eq('cpf_votante', cpfLimpo);
-          
-          if (checkError) throw checkError;
-          
-          if (votosExistentes && votosExistentes.length > 0) {
-            hideLoading();
-            showError('Voto Já Registrado', 'Este CPF já votou. Cada pessoa pode votar apenas uma vez.');
-            return;
-          }
-        } catch (error) {
+      if (cpfLimpo.length !== 11) {
+        showError('CPF Inválido', 'Por favor, digite um CPF válido com 11 dígitos.');
+        return;
+      }
+      
+      // 🛡️ PROTEÇÃO 3: Validar CPF com dígitos verificadores (anti-fraude)
+      if (!window.AntiFraude.validarCPF(cpfLimpo)) {
+        showError('CPF Inválido', 'O CPF digitado não é válido. Verifique os números.');
+        return;
+      }
+      
+      // 🛡️ PROTEÇÃO 4: Verificar se já votou NO BANCO DE DADOS (única fonte de verdade)
+      try {
+        showLoading('Verificando voto...');
+        
+        const { data: votosExistentes, error: checkError } = await supabase
+          .from('votos')
+          .select('id')
+          .eq('cpf_votante', cpfLimpo);
+        
+        if (checkError) throw checkError;
+        
+        if (votosExistentes && votosExistentes.length > 0) {
           hideLoading();
-          console.error('Erro ao verificar voto:', error);
-          showError('Erro', 'Erro ao verificar voto anterior.');
+          showError('Voto Já Registrado', 'Este CPF já votou. Cada pessoa pode votar apenas uma vez.');
           return;
         }
+      } catch (error) {
+        hideLoading();
+        console.error('Erro ao verificar voto:', error);
+        showError('Erro', 'Erro ao verificar voto anterior.');
+        return;
       }
       
       // Registrar voto
