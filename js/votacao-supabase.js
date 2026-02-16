@@ -164,7 +164,7 @@ async function carregarGaleria(resetar = false) {
     
   } catch (error) {
     console.error('Erro ao carregar galeria:', error);
-    showError('Erro', 'Não foi possível carregar a galeria de looks.');
+    showError('Erro', 'Não foi possível carregar a galeria de looks.', error);
   }
 }
 
