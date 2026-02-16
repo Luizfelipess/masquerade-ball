@@ -173,7 +173,7 @@ async function carregarGaleria(resetar = false) {
         </p>
       `;
     }
-    showError('Erro', 'Não foi possível carregar a galeria de looks.\n\n' + (error?.message || ''));
+    showError('Erro', 'Não foi possível carregar a galeria de lookss.\n\n' + (error?.message || ''));
 }
 }
 
