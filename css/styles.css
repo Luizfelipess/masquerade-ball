@@ -301,6 +301,23 @@ html[data-theme='light'] .theme-toggle:hover{
   cursor:not-allowed;
 }
 
+/* === PHOTO UPLOAD MODAL === */
+.photo-upload-modal{display:none;position:fixed;inset:0;z-index:2000;align-items:center;justify-content:center}
+.photo-upload-modal[aria-hidden="false"]{display:flex}
+.photo-upload-modal .modal-backdrop{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.6));backdrop-filter:blur(4px)}
+.photo-upload-modal .modal-card{position:relative;z-index:2001;max-width:520px;width:94%;background:linear-gradient(180deg,var(--bg-card),var(--bg-dark));border:1px solid rgba(212,175,55,0.12);padding:20px;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.6);}
+.photo-upload-modal h3{margin:0 0 8px 0;color:var(--gold);font-family:'Playfair Display',serif}
+.photo-upload-modal .muted{color:var(--muted);font-size:0.95rem;margin-bottom:12px}
+.photo-upload-modal .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.photo-upload-modal .field input{padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--accent);outline:none}
+.photo-upload-modal .upload-controls{display:flex;gap:8px;align-items:center}
+.photo-upload-modal input[type="file"]{padding:6px}
+.photo-upload-modal #photo-preview img{max-width:100%;border-radius:10px;margin-top:8px}
+.btn-close-modal{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--muted);font-size:1.6rem;cursor:pointer}
+
+.main-nav a.upload-link{padding:10px 14px;border-radius:8px;background:linear-gradient(135deg, rgba(212,175,55,0.04), transparent);color:var(--accent-soft);font-weight:700}
+.main-nav a.upload-link:hover{color:var(--gold-light);transform:translateY(-2px)}
+
 /* === HERO SECTION === */
 .hero{
   display:flex;

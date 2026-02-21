@@ -33,6 +33,7 @@
       <a href="/pages/votacao.html" class="menu-votacao" style="display:none">Votação</a>
       <a href="/pages/confirmacao-simples.html">Confirmação</a>
       <a href="/pages/tributos.html">Tributos</a>
+      <a href="#" id="open-photo-upload" class="upload-link">Enviar Foto</a>
       </nav>
     </header>
 
@@ -83,5 +84,32 @@
     <script src="/js/supabase-config.js"></script>
     <script src="/js/menu-votacao.js"></script>
     <script src="/js/main.js" defer></script>
+    <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
+    <script src="/js/cloudinary-upload.js"></script>
+    <script src="/js/upload-navbar.js" defer></script>
+
+    <!-- Photo upload modal -->
+    <div id="photo-upload-modal" class="photo-upload-modal" aria-hidden="true">
+      <div class="modal-backdrop" data-close></div>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="photo-upload-title">
+        <button class="btn-close-modal" id="close-photo-modal" aria-label="Fechar">×</button>
+        <h3 id="photo-upload-title">Enviar Foto</h3>
+        <p class="muted">Tire uma foto com a câmera do celular ou selecione da galeria. Nome é opcional.</p>
+
+        <label class="field">
+          <span class="field-label">Nome (opcional)</span>
+          <input id="photo-name" type="text" placeholder="Seu nome (opcional)" />
+        </label>
+
+        <div class="upload-controls">
+          <button id="open-cloud-widget" class="btn secondary">Abrir widget (câmera/arquivo)</button>
+          <input id="photo-file" type="file" accept="image/*" capture="environment" />
+          <button id="upload-direct-navbar" class="btn primary">Enviar</button>
+        </div>
+
+        <div id="photo-preview" style="margin-top:12px"></div>
+        <pre id="photo-info" style="white-space:pre-wrap;font-size:12px;margin-top:8px"></pre>
+      </div>
+    </div>
   </body>
 </html>

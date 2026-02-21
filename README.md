@@ -29,4 +29,26 @@ Próximos passos possíveis (posso implementar):
 - Integrar com Firebase (autenticação + Firestore + Storage) para votação pública com prevenção efetiva de duplicatas.
 - Configurar funções serverless no Vercel para validação server-side de CPF + upload seguro.
 
-Se quiser, implemento a integração que preferir (diga qual: Google Forms, Firebase ou Vercel/Netlify + Supabase) e eu faço a configuração inicial e os ajustes no front-end para apontar ao backend.
+
+Integração de Uploads com Cloudinary
+------------------------------------
+
+É possível usar o Cloudinary para armazenar imagens enviadas pelos usuários. Abaixo há instruções rápidas para configurar um upload unsigned (cliente) e um exemplo de uso incluído neste projeto.
+
+Passos rápidos:
+
+1. Crie uma conta em https://cloudinary.com e acesse o painel.
+2. Copie o seu *Cloud name* (painel -> Dashboard).
+3. Em Settings -> Upload, crie um *Upload preset* e marque como *unsigned* (Unsigned Uploads).
+4. No projeto, abra [pages/upload.html](pages/upload.html) e substitua as constantes `CLOUDINARY_CLOUD_NAME` e `CLOUDINARY_UPLOAD_PRESET` pelos valores obtidos.
+5. Abra `pages/upload.html` no navegador (ou sirva o projeto com um servidor estático). Use "Abrir widget de upload" para testar o widget, ou selecione um arquivo e clique em "Fazer upload direto".
+
+Notas de segurança:
+
+- Uploads unsigned permitem envio direto do cliente para o Cloudinary sem fornecer suas credenciais secretas, mas certifique-se de aplicar regras (restrições de tamanho/tipo) no preset.
+- Para maior controle (assinaturas, validações server-side), implemente um endpoint que gere assinaturas e faça uploads autenticados a partir do servidor.
+
+Arquivo de exemplo adicionado:
+
+- `pages/upload.html` — demonstra o widget do Cloudinary e um exemplo de upload direto via fetch.
+- `js/cloudinary-upload.js` — helpers para criar o widget e realizar upload direto via API.

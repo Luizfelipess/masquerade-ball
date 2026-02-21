@@ -1,87 +1,146 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Upload de Fotos — Baile de Máscaras</title>
-  <link rel="stylesheet" href="../css/styles.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Enviar Foto — Baile de Máscaras</title>
+
+  <!-- Apply theme immediately to prevent flash -->
+  <script>
+    (function(){
+      const stored = localStorage.getItem('site-theme');
+      const initial = stored || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      if(initial === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
 </head>
-<body>
-  <main style="max-width:800px;margin:40px auto;padding:16px;">
-    <h1>Upload de Fotos (Cloudinary)</h1>
-
-    <p>Suba uma foto usando o widget do Cloudinary ou upload direto (unsigned preset).</p>
-
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button id="open-widget">Abrir widget de upload</button>
-      <input id="file-input" type="file" accept="image/*" />
-      <button id="upload-direct">Fazer upload direto</button>
+<body class="invitation-page">
+  <header class="site-header">
+    <div class="brand">
+      <h1>Baile de Máscaras</h1>
+      <p class="lead">Comemoração aos 30 Anos de <span class="celebrant-name">Thamires Feres</span></p>
     </div>
+    <button class="theme-toggle" aria-pressed="false" aria-label="Alternar tema" title="Alternar tema">
+      <span class="icon">☾</span>
+      <span class="label">Tema</span>
+    </button>
+    <button class="hamburger" aria-label="Menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav class="main-nav" aria-label="Navegação principal">
+      <a href="/">Início</a>
+      <a href="/pages/convite.html">Convite</a>
+      <a href="/pages/codigo-vestes.html">Código de Vestes</a>
+      <a href="/pages/premio.html">Prêmio</a>
+      <a href="/pages/votacao.html" class="menu-votacao" style="display:none">Votação</a>
+      <a href="/pages/confirmacao-simples.html">Confirmação</a>
+      <a href="/pages/tributos.html">Tributos</a>
+    </nav>
+  </header>
 
-    <section id="result" style="margin-top:20px;">
-      <h3>Resultado</h3>
-      <div id="preview"></div>
-      <pre id="info" style="white-space:pre-wrap;font-size:12px"></pre>
+  <main class="container" style="padding:48px 20px;max-width:900px;">
+    <section class="card" style="padding:28px;border-radius:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <h2 style="margin:0;font-family:'Playfair Display',serif;color:var(--gold)">Enviar Foto</h2>
+          <p class="muted" style="margin:6px 0 0">Compartilhe seu look para o álbum do Baile. Nome é opcional.</p>
+        </div>
+        <div style="text-align:right">
+          <a href="/" class="btn secondary" style="text-decoration:none">Voltar</a>
+        </div>
+      </div>
+
+      <form id="upload-form" style="margin-top:18px;display:grid;gap:12px">
+        <label class="field">
+          <span class="field-label">Nome (opcional)</span>
+          <input id="upload-name" name="name" type="text" placeholder="Ex.: Maria (opcional)" />
+        </label>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button id="widget-btn" type="button" class="btn secondary">Abrir widget (câmera/arquivo)</button>
+          <label class="btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+            <input id="file-input" type="file" accept="image/*" capture="environment" style="display:none">
+            Selecionar foto
+          </label>
+          <button id="upload-btn" type="button" class="btn primary">Enviar</button>
+        </div>
+
+        <div id="preview" aria-live="polite" style="margin-top:8px"></div>
+        <div id="status" style="font-size:0.95rem;color:var(--muted)"></div>
+      </form>
     </section>
+  </main>
 
-    <hr />
-    <p>
-      <strong>Configuração:</strong> edite as constantes abaixo com seu <em>cloud name</em>
-      e <em>unsigned upload preset</em> (veja README).
-    </p>
+  <footer class="site-footer">
+    <p>Feito com carinho — envie apenas imagens apropriadas para o evento.</p>
+  </footer>
 
-    <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
-    <script src="../js/cloudinary-upload.js"></script>
-    <script>
-      // TODO: substitua pelos seus valores do Cloudinary
-      const CLOUDINARY_CLOUD_NAME = 'dxek9zvg5';
-      const CLOUDINARY_UPLOAD_PRESET = 'baile_unsigned';
+  <!-- Cloudinary configuration: preencha estes valores no deploy (não comitar chaves secretas) -->
+  <div id="cloud-config" data-cloud-name="" data-upload-preset=""></div>
 
-      const openBtn = document.getElementById('open-widget');
+  <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
+  <script src="/js/cloudinary-upload.js"></script>
+  <script>
+    (function(){
+      const cfg = document.getElementById('cloud-config') || {};
+      const CLOUD_NAME = cfg.dataset ? cfg.dataset.cloudName : '';
+      const UPLOAD_PRESET = cfg.dataset ? cfg.dataset.uploadPreset : '';
+
+      const widgetBtn = document.getElementById('widget-btn');
       const fileInput = document.getElementById('file-input');
-      const uploadDirectBtn = document.getElementById('upload-direct');
+      const uploadBtn = document.getElementById('upload-btn');
       const preview = document.getElementById('preview');
-      const info = document.getElementById('info');
+      const status = document.getElementById('status');
+      const nameInput = document.getElementById('upload-name');
 
-      function showResult(json) {
-        preview.innerHTML = '';
-        const img = document.createElement('img');
-        img.src = json.secure_url || json.url;
-        img.style.maxWidth = '100%';
-        preview.appendChild(img);
-        info.textContent = JSON.stringify(json, null, 2);
+      function setStatus(text){ status.textContent = text || ''; }
+      function showPreview(src){ preview.innerHTML = ''; const img = document.createElement('img'); img.src = src; img.style.maxWidth='100%'; img.style.borderRadius='12px'; preview.appendChild(img); }
+
+      if(!CLOUD_NAME || !UPLOAD_PRESET){
+        setStatus('Configuração Cloudinary ausente. Preencha os atributos em #cloud-config antes do deploy.');
       }
 
-      openBtn.addEventListener('click', function () {
-        try {
-          const widget = CloudinaryUpload.createWidget(
-            CLOUDINARY_CLOUD_NAME,
-            CLOUDINARY_UPLOAD_PRESET,
-            function (info) {
-              showResult(info);
-            }
-          );
-          widget.open();
-        } catch (err) {
-          alert('Erro: ' + err.message);
-        }
+      widgetBtn && widgetBtn.addEventListener('click', function(){
+        if(!CLOUD_NAME || !UPLOAD_PRESET) return alert('Cloudinary não configurado');
+        try{
+          const w = CloudinaryUpload.createWidget(CLOUD_NAME, UPLOAD_PRESET, function(info){
+            showPreview(info.secure_url || info.url);
+            setStatus('Enviado com sucesso.');
+          });
+          w.open();
+        }catch(err){ alert('Erro ao abrir widget: '+err.message); }
       });
 
-      uploadDirectBtn.addEventListener('click', async function () {
-        const file = fileInput.files && fileInput.files[0];
-        if (!file) return alert('Selecione um arquivo primeiro');
-        try {
-          const res = await CloudinaryUpload.uploadFileDirect(
-            file,
-            CLOUDINARY_CLOUD_NAME,
-            CLOUDINARY_UPLOAD_PRESET
-          );
-          showResult(res);
-        } catch (err) {
-          alert('Upload falhou: ' + err.message);
+      fileInput && fileInput.addEventListener('change', function(){
+        const f = fileInput.files && fileInput.files[0];
+        if(!f) return;
+        const url = URL.createObjectURL(f);
+        showPreview(url);
+        setStatus('Pronto para enviar.');
+      });
+
+      uploadBtn && uploadBtn.addEventListener('click', async function(){
+        if(!CLOUD_NAME || !UPLOAD_PRESET) return alert('Cloudinary não configurado');
+        const f = fileInput.files && fileInput.files[0];
+        if(!f) return alert('Selecione uma foto primeiro');
+        setStatus('Enviando...');
+        try{
+          const res = await CloudinaryUpload.uploadFileDirect(f, CLOUD_NAME, UPLOAD_PRESET);
+          showPreview(res.secure_url || res.url);
+          setStatus('Enviado com sucesso. URL: ' + (res.secure_url || res.url));
+          // aqui você pode enviar também o nome para seu backend, junto com res.public_id / url
+        }catch(err){
+          setStatus('Erro no upload: ' + err.message);
         }
       });
-    </script>
-  </main>
+    })();
+  </script>
 </body>
 </html>
