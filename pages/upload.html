@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Upload de Fotos — Baile de Máscaras</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <main style="max-width:800px;margin:40px auto;padding:16px;">
+    <h1>Upload de Fotos (Cloudinary)</h1>
+
+    <p>Suba uma foto usando o widget do Cloudinary ou upload direto (unsigned preset).</p>
+
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button id="open-widget">Abrir widget de upload</button>
+      <input id="file-input" type="file" accept="image/*" />
+      <button id="upload-direct">Fazer upload direto</button>
+    </div>
+
+    <section id="result" style="margin-top:20px;">
+      <h3>Resultado</h3>
+      <div id="preview"></div>
+      <pre id="info" style="white-space:pre-wrap;font-size:12px"></pre>
+    </section>
+
+    <hr />
+    <p>
+      <strong>Configuração:</strong> edite as constantes abaixo com seu <em>cloud name</em>
+      e <em>unsigned upload preset</em> (veja README).
+    </p>
+
+    <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
+    <script src="../js/cloudinary-upload.js"></script>
+    <script>
+      // TODO: substitua pelos seus valores do Cloudinary
+      const CLOUDINARY_CLOUD_NAME = 'dxek9zvg5';
+      const CLOUDINARY_UPLOAD_PRESET = 'baile_unsigned';
+
+      const openBtn = document.getElementById('open-widget');
+      const fileInput = document.getElementById('file-input');
+      const uploadDirectBtn = document.getElementById('upload-direct');
+      const preview = document.getElementById('preview');
+      const info = document.getElementById('info');
+
+      function showResult(json) {
+        preview.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = json.secure_url || json.url;
+        img.style.maxWidth = '100%';
+        preview.appendChild(img);
+        info.textContent = JSON.stringify(json, null, 2);
+      }
+
+      openBtn.addEventListener('click', function () {
+        try {
+          const widget = CloudinaryUpload.createWidget(
+            CLOUDINARY_CLOUD_NAME,
+            CLOUDINARY_UPLOAD_PRESET,
+            function (info) {
+              showResult(info);
+            }
+          );
+          widget.open();
+        } catch (err) {
+          alert('Erro: ' + err.message);
+        }
+      });
+
+      uploadDirectBtn.addEventListener('click', async function () {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) return alert('Selecione um arquivo primeiro');
+        try {
+          const res = await CloudinaryUpload.uploadFileDirect(
+            file,
+            CLOUDINARY_CLOUD_NAME,
+            CLOUDINARY_UPLOAD_PRESET
+          );
+          showResult(res);
+        } catch (err) {
+          alert('Upload falhou: ' + err.message);
+        }
+      });
+    </script>
+  </main>
+</body>
+</html>
