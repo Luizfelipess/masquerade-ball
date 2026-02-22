@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/votacao.html" }
+    { "source": "/", "destination": "pages/votacao.html" }
   ],
   "redirects": [
     {
