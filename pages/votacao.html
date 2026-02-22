@@ -89,22 +89,25 @@
         <p style="text-align:center; color:var(--muted); margin-bottom:20px;">
           Enviar seu look é opcional! Você pode participar da votação mesmo sem enviar foto.
         </p>
-       
+        
         <form id="voto-form" class="card">
           <div class="form-row">
-            <label class="small">Nome do(a) Convidado(a)<br>
-              <input name="nome" class="input" placeholder="Ex.: Ana Correa" required>
+            <label class="small">Nome (opcional)<br>
+              <input name="nome" class="input" placeholder="Ex.: Ana Correa">
             </label>
-            <label class="small">CPF (único envio por CPF)<br>
+            <label class="small">CPF (único envio/voto)<br>
               <input name="cpf" class="input" data-mask="cpf" placeholder="000.000.000-00" required>
             </label>
           </div>
           <label class="small" style="display:block;margin-top:10px">Descrição breve do traje<br>
             <textarea name="descricao" class="input" rows="3" placeholder="Conte o que inspirou seu traje — opcional"></textarea>
           </label>
-          <label class="small" style="display:block;margin-top:10px">Foto do traje (tire agora ou escolha da galeria)<br>
-            <input type="file" id="foto-traje" accept="image/*" capture="environment" required>
-            <p style="font-size:0.8rem;color:var(--muted);margin:6px 0 0">💡 No celular, você pode tirar a foto diretamente</p>
+          <!-- ✅ GALERIA + CÂMERA AUTO MOBILE -->
+          <label class="small" style="display:block;margin-top:10px">Foto do traje<br>
+            <input type="file" id="foto-traje" accept="image/*" capture> <!-- Abre galeria E câmera! -->
+            <p style="font-size:0.8rem;color:var(--muted);margin:6px 0 0">
+              💡 No celular: Galeria ou Câmera detectadas automaticamente
+            </p>
           </label>
           <img id="foto-preview" alt="Pré-visualização" style="display:none;max-width:360px;margin-top:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04)">
           <div style="margin-top:12px">
@@ -124,6 +127,7 @@
     <p>Feito com esmero para uma noite inesquecível — Inspirado por Bridgerton.</p>
   </footer>
 
+  <!-- SCRIPTS (seu JS atual + melhorias) -->
   <script src="/js/supabase-config.js"></script>
   <script src="/js/supabase-functions.js"></script>
   <script src="/js/anti-fraude.js"></script>
