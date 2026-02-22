@@ -17,6 +17,8 @@ const LOOKS_POR_PAGINA = 20;
 
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('🗳️ Sistema de votação inicializado');
+  // Indica ao `main.js` que esta página usa a versão Supabase
+  window.SUPABASE_VOTING = true;
   
   const liberada = await verificarVotacaoLiberada();
   await carregarGaleria();
@@ -148,13 +150,14 @@ function setupFormularioEnvio() {
     
     const formData = new FormData(e.target);
     const nome = formData.get('nome')?.trim() || 'Anônimo'; // ✅ OPCIONAL!
-    const cpf = formData.get('cpf').trim().replace(/\D/g, '');
+    const cpfRaw = (formData.get('cpf') || '').trim();
+    const cpf = cpfRaw ? cpfRaw.replace(/\D/g, '') : null; // CPF agora é opcional
     const descricao = formData.get('descricao')?.trim();
     const foto = document.getElementById('foto-traje').files[0];
     
-    // ✅ SÓ valida CPF + foto
-    if (cpf.length !== 11 || !window.AntiFraude?.validarCPF?.(cpf)) {
-      showError('CPF inválido', 'Digite CPF correto (11 dígitos)');
+    // ✅ Se CPF foi informado, valida; caso contrário prossegue (CPF opcional)
+    if (cpf && (cpf.length !== 11 || !window.AntiFraude?.validarCPF?.(cpf))) {
+      showError('CPF inválido', 'Digite CPF correto (11 dígitos) ou deixe em branco para enviar sem CPF');
       return;
     }
     if (!foto) {
@@ -162,15 +165,17 @@ function setupFormularioEnvio() {
       return;
     }
     
-    // Check duplicado CPF
-    const { data: existente } = await supabase
-      .from('looks').select('id').eq('cpf', cpf).maybeSingle();
-    
-    if (existente) {
-      showError('Já enviou', 'Este CPF já tem look!');
-      return;
+    // Check duplicado CPF apenas se CPF informado
+    if (cpf) {
+      const { data: existente } = await supabase
+        .from('looks').select('id').eq('cpf', cpf).maybeSingle();
+      if (existente) {
+        // Não bloqueamos envio por completo — informamos e interrompemos para evitar duplicatas intencionais
+        showError('Já enviou', 'Este CPF já tem look! Se for um erro, contate o administrador.');
+        return;
+      }
     }
-    
+
     await enviarLook(nome, cpf, descricao, foto);
   };
 }

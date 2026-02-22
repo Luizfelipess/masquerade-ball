@@ -215,6 +215,9 @@
   function handleVotingForm(){
     const form = qs('#voto-form');
     if(!form) return;
+
+    // If a Supabase-backed voting implementation is present, skip the local mock handler
+    if (window.SUPABASE_VOTING) return;
     const preview = qs('#foto-preview');
     const fileInput = qs('#foto-traje');
 
