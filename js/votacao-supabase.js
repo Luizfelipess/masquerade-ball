@@ -103,7 +103,7 @@ function renderizarProximaPagina() {
         ${look.descricao ? `<p>${look.descricao}</p>` : ''}
         <div class="vote-section">
           <button class="btn-vote" data-look-id="${look.id}" data-look-nome="${(look.nome || 'Look').replace(/"/g, '&quot;')}">
-            Votar Neste Look (${look.votos} votos)
+            Votar Neste Look
           </button>
         </div>
       </div>
